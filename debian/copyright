@@ -1,0 +1,33 @@
+Format: https://www.debian.org/doc/packaging-manuals/copyright-format/1.0/
+Upstream-Name: linBPQ
+Upstream-Contact: Johan Maes <on4qz@pandora.be>
+Source: http://users.telenet.be/on4qz/
+
+Files: *
+Copyright: 1990-2022 G8BPQ
+License: GPL-3
+
+Files: debian/*
+Copyright: 2016-2021 Dave Hibberd <d@vehibberd.com>
+License: GPL-3
+
+File: debian/linbpq.service
+Copyright: Tom Fanning M0LTE
+License: GPL-3
+
+License: GPL-3
+ This program is free software: you can redistribute it and/or modify
+ it under the terms of the GNU General Public License as published by
+ the Free Software Foundation, either version 3 of the License, or
+ (at your option) any later version.
+ .
+ This program is distributed in the hope that it will be useful,
+ but WITHOUT ANY WARRANTY; without even the implied warranty of
+ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ GNU General Public License for more details.
+ . 
+ You should have received a copy of the GNU General Public License
+ along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ .
+ The GPL License which applies to this package can be found on your Debian
+ system at /usr/share/common-licenses/GPL-3. 

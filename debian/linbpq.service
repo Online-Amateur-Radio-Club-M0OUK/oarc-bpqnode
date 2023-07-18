@@ -1,0 +1,10 @@
+[Unit]
+After=network.target
+
+[Service]
+ExecStart=/opt/oarc/linbpq/linbpq
+WorkingDirectory=/opt/oarc/linbpq
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

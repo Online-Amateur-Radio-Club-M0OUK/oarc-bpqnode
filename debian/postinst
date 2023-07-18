@@ -1,0 +1,16 @@
+#!/bin/sh
+
+if [ "$1" = configure ]; then     
+# If we have setcap is installed, set the requirements
+# which allows us to install our binaries without the setuid
+# bit.     
+	if command -v setcap > /dev/null; then         
+			setcap "CAP_NET_ADMIN=ep CAP_NET_RAW=ep CAP_NET_BIND_SERVICE=ep" linbq
+		else
+			echo "Setcap failed on /usr/sbin/linbpq, Features may be limited" >&2
+	fi
+	else
+		echo "Setcap is not installed,  Features may be limited" >&2     
+fi 
+
+#DEBHELPER#

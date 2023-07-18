@@ -1,0 +1,18 @@
+Source: linbpq
+Section: hamradio
+Priority: optional
+Maintainer: Debian Hamradio Maintainers <debian-hams@lists.debian.org>
+Uploaders:
+ Dave Hibberd <d@vehibberd.com>,
+Standards-Version: 4.6.1.0
+Vcs-Browser: https://salsa.debian.org/debian-hamradio-team/linbpq
+Vcs-Git: https://salsa.debian.org/debian-hamradio-team/linbpq.git
+Homepage: http://users.telenet.be/on4qz
+Build-Depends: debhelper-compat (= 13), libssl-dev, libminiupnpc-dev, libpcap-dev, libconfig-dev, zlib1g-dev
+Rules-Requires-Root: no
+
+Package: linbpq
+Architecture: linux-any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Packet node and ax25 stack
+ LINBPQ is a Linux version of the BPQ32 Node, BBS and Chat Server components.
