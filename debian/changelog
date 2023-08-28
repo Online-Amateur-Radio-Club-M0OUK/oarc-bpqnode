@@ -1,5 +1,5 @@
-linbpq (6.0.24.2-1) UNRELEASED; urgency=medium
+linbpq (6.0.24.2-1) unstable; urgency=medium
 
   * Initial release. 
 
- -- Dave Hibberd <d@vehibberd.com>  Mon, 28 Aug 2023 20:40:27 +0100
+ -- Dave Hibberd <d@vehibberd.com>  Mon, 28 Aug 2023 23:20:45 +0100
