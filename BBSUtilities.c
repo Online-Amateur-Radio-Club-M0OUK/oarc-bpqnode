@@ -8061,6 +8061,14 @@ BOOL ProcessBBSConnectScript(CIRCUIT * conn, char * Buffer, int len)
 		now %= 86400;
 		Line = Scripts[n];
 
+		// Skip comments
+
+		while (Line && ((strcmp(Line, " ") == 0 || Line[0] == ';' || Line[0] == '#')))
+		{
+			n++;
+			Line = Scripts[n];
+		}
+
 		if (_memicmp(Line, "TIMES", 5) == 0)
 		{
 		NextBand:
@@ -9668,7 +9676,7 @@ VOID SaveConfig(char * ConfigName)
 
 	// Save UI config
 
-	for (i=1; i<=32; i++)
+	for (i=1; i <= GetNumberofPorts(); i++)
 	{
 		char Key[100];
 			
@@ -10192,7 +10200,7 @@ BOOL GetConfig(char * ConfigName)
 	GetStringValue(group, "Version", Size);
 	sscanf(Size,"%d,%d,%d,%d", &LastVer[0], &LastVer[1], &LastVer[2], &LastVer[3]);
 
-	for (i=1; i<=32; i++)
+	for (i =1 ; i <= GetNumberofPorts(); i++)
 	{
 		char Key[100];
 			
@@ -10654,7 +10662,8 @@ int Disconnected (int Stream)
 			}
 
 			/* ---- TAJ PG SERVER ---- */
-			if ( conn->UserPointer->Temp->RUNPGPARAMS ) {
+			if (conn->UserPointer && conn->UserPointer->Temp && conn->UserPointer->Temp->RUNPGPARAMS)
+			{
 				printf("Freeing RUNPGPARAMS\n");
 				free(conn->UserPointer->Temp->RUNPGPARAMS);
 				conn->UserPointer->Temp->RUNPGPARAMS = NULL;
@@ -11870,7 +11879,7 @@ void run_pg( CIRCUIT * conn, struct UserInfo * user )
 	PROCESS_INFORMATION piProcInfo; 
 	STARTUPINFO siStartInfo;
 	BOOL bSuccess = FALSE; 
-	DWORD dwRead, dwWritten; 
+	DWORD dwRead; 
 	CHAR chBuf[BUFSIZE]; 
 	int index = 0;
 	int ret = 0;
@@ -14526,7 +14535,7 @@ void ProcessSyncModeMessage(CIRCUIT * conn, struct UserInfo * user, char* Buffer
 		char * BIDptr;
 
 		BIDRec * BID;
-		char *ptr1, *ptr2, *context;
+		char *ptr2, *context;
 
 		//		TR AddMessage_1145_G8BPQ 727 1202 440 True
 
@@ -14761,8 +14770,6 @@ void SendRequestSync(CIRCUIT * conn)
 	char Date[32];
 	char MsgTime[32];
 	time_t Time = time(NULL);
-
-	char * Encoded;
 
 	tm = gmtime(&Time);
 

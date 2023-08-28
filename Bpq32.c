@@ -1086,7 +1086,7 @@ along with LinBPQ/BPQ32.  If not, see http://www.gnu.org/licenses
 //	Add ? and * wildcards to NODES command (74)
 //  Add Port RADIO config parameter (74)
 
-//  Version 6.0.24.1 ??
+//  Version 6.0.24.1 August 2023
 
 //	Apply NODES command wildcard to alias as well a call (2)
 //	Add STOPPORT/STARTPORT to VARA Driver (2)
@@ -1115,7 +1115,7 @@ along with LinBPQ/BPQ32.  If not, see http://www.gnu.org/licenses
 //	Fix processing C command if first port driver is SCSPACTROR (20)
 //	Fix crash in UZ7HO driver if bad raw frame received (21)
 //	Fix using FLARQ chat mode with FLDIGI ddriover (22)
-//	Fixed to KISSHF driver (23)
+//	Fix to KISSHF driver (23)
 //	Fix for application buffer loss (24)
 //	Add Web Sockets auto-refresh option for Webmail index page (25)
 //	Fix FREEDATA driver for compatibility with FreeData TNC version 0.6.4-alpha.3 (25)
@@ -1173,7 +1173,16 @@ along with LinBPQ/BPQ32.  If not, see http://www.gnu.org/licenses
 //	Detect loss of DED application (76)
 //	Fix connects to Application Alias with UZ7HO Driver (76)
 //	Fix Interlock of ports on same UZ7HO modem. (76)
-//	Add extended Ports command 
+//	Add extended Ports command (77)
+//	Fix crash in Linbpq when stdout is redirected to /dev/tty? and stdin ia redirected (78)
+//	Fix Web Terminal (80)
+//	Trap ENCRYPTION message from VARA (81)
+//	Fix processing of the Winlink API /account/exists response (82)
+//	Fix sending CTEXT to L4 connects to Node when FULL_CTEXT is not set
+
+//  Version 6.0.25.? 
+
+//	Fix 64 bit compatibility problems in SCSTracker and UZ7HO drivers
 
 #define CKernel
 

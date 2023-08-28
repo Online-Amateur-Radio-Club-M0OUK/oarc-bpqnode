@@ -752,7 +752,7 @@ IdTag (random alphanumeric, 12 chars)
 			SendHTTPRequest(sock, "/account/exists", Message, Len, Response);
 			closesocket(sock);
 
-			if (strstr(Response, "false"))
+			if (strstr(Response, "\"CallsignExists\":false"))
 			{
 				WritetoConsole("WL2K Traffic Reporting disabled - Gateway ");
 				WritetoConsole(ADIF->CMSCall);
@@ -959,7 +959,7 @@ VOID SendHTTPReporttoWL2KThread(void * unused)
 			SendHTTPRequest(sock, "/account/exists", Message, Len, Response);
 			closesocket(sock);
 
-			if (strstr(Response, "false"))
+			if (strstr(Response, "\"CallsignExists\":false"))
 			{
 				WritetoConsole("WL2K Reporting disabled - Gateway ");
 				WritetoConsole(WL2KReport->BaseCall);

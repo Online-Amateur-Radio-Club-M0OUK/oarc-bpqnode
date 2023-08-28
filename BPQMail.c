@@ -1097,7 +1097,7 @@
 //	Disconnect immediately if "Invalid Command" "*** Protocol Error" or "Already Connected" received (.70)
 //	Check Badword and Reject filters before processing WP Messages
 
-//  6.0.24.1  ?? 2022
+//  6.0.24.1  August 2023
 
 //	Fix ' in Webmail subject (8)
 //	Change web buttons to white on black when pressed (10)
@@ -1110,10 +1110,13 @@
 //	Fix Webmail auto-refresh when page exceeds 64K bytes (54)
 //	Fix Webmail send when using both headers/footers and attachmonts (55)
 //	Fix R: line corruption on some 64 bit builds
-//	Dont drop empty lines inm TEXTFORWARDING (61)
+//	Dont drop empty lines in TEXTFORWARDING (61)
 //	Dont wait for body prompt for TEXTFORWARDING for SID [PMS-3.2-C$] (62)
 //	Add forwarding mode SETCALLTOSENDER for PMS Systems that don't accept < in SP (63)
 //	QtTerm Monitoring fixed for 63 port version of BPQ (69)
+//	Fix to UI system to support up to 63 ports (79)
+//	Fix recently introduced crash when "Don't allow new users" is set (81)
+//	Skip comments before TIMES at start of Connect Script (83)
 
 
 #include "bpqmail.h"
@@ -1711,7 +1714,7 @@ int APIENTRY WinMain(HINSTANCE hInstance,
 		}
 		/* ---------- TAJ --PG Server------*/
 
-			if ( user->Temp->RUNPGPARAMS ) {
+			if (user->Temp && user->Temp->RUNPGPARAMS ) {
 
 				printf("Also freeing RUNPGARGS\n");
 				free(user->Temp->RUNPGPARAMS);
