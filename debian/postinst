@@ -1,16 +1,39 @@
 #!/bin/sh
 
 if [ "$1" = configure ]; then     
+
+#	if ! getent group linbpq >/dev/null; then
+#		addgroup --system --force-badname linbpq || true
+#	fi
+
+	echo "Creating/updating linbpq user account..."
+	adduser --system --group --home /opt/oarc/bpq \
+            --gecos "linbpq system user" --shell /bin/false \
+            --quiet --disabled-password linbpq || {
+        # adduser failed. Why?
+        if getent passwd linbpq >/dev/null ; then
+            echo "Non-system user linbpq found. I will not overwrite a non-system" >&2
+            echo "user.  Remove the user and reinstall linbpq." >&2
+            exit 1
+        fi
+        # unknown adduser error, simply exit
+        exit 1
+    } 
+    	adduser linbpq dialout
+	chown :linbpq /opt/oarc/bpq
+	chmod 775 /opt/oarc/bpq
 # If we have setcap is installed, set the requirements
 # which allows us to install our binaries without the setuid
 # bit.     
 	if command -v setcap > /dev/null; then         
-			setcap "CAP_NET_ADMIN=ep CAP_NET_RAW=ep CAP_NET_BIND_SERVICE=ep" linbq
+			setcap "CAP_NET_ADMIN=ep CAP_NET_RAW=ep CAP_NET_BIND_SERVICE=ep" /opt/oarc/bpq/linbpq
 		else
 			echo "Setcap failed on /usr/sbin/linbpq, Features may be limited" >&2
 	fi
 	else
 		echo "Setcap is not installed,  Features may be limited" >&2     
+
+
 fi 
 
 #DEBHELPER#
