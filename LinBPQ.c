@@ -28,6 +28,7 @@ along with LinBPQ/BPQ32.  If not, see http://www.gnu.org/licenses
 //#include "C:\Program Files (x86)\GnuWin32\include\iconv.h"
 #else
 #include <iconv.h>
+#include <errno.h>
 #ifndef MACBPQ
 #ifndef FREEBSD
 #include <sys/prctl.h>
@@ -74,6 +75,8 @@ int upnpClose();
 void SaveAIS();
 void initAIS();
 void DRATSPoll();
+
+extern uint64_t timeLoadedMS;
 
 BOOL IncludesMail = FALSE;
 BOOL IncludesChat = FALSE;
@@ -174,8 +177,15 @@ int _MYTIMEZONE = 0;
 /* #define F_PWD        0x1000 */
 
 
-UCHAR BPQDirectory[260];
-UCHAR LogDirectory[260];
+extern UCHAR BPQDirectory[260];
+extern UCHAR LogDirectory[260];
+extern UCHAR ConfigDirectory[260];
+
+// overrides from params
+UCHAR LogDir[260] = "";
+UCHAR ConfigDir[260] = "";
+UCHAR DataDir[260] = "";
+
 
 BOOL GetConfig(char * ConfigName);
 VOID DecryptPass(char * Encrypt, unsigned char * Pass, unsigned int len);
@@ -704,8 +714,26 @@ void ConTermPoll()
 	return;
 
 }
-		
 
+#include "getopt.h"
+
+static struct option long_options[] =
+{
+	{"logdir",  required_argument, 0 , 'l'},
+	{"configdir",  required_argument, 0 , 'c'},
+	{"datadir",  required_argument, 0 , 'd'},
+	{"help",  no_argument, 0 , 'h'},
+	{ NULL , no_argument , NULL , no_argument }
+};
+
+char HelpScreen[] =
+	"Usage:\n"
+	"Optional Paramters\n"
+	"-l path or --logdir path          Path for log files\n"
+	"-c path or --configdir path       Path to Config file bpq32.cfg\n"
+	"-d path or --datadir path         Path to Data Files\n"
+	"-v                                Show version and exit\n";
+	
 int Redirected = 0;
 
 int main(int argc, char * argv[])
@@ -715,7 +743,6 @@ int main(int argc, char * argv[])
 	ConnectionInfo * conn;
 	struct stat STAT;
 	PEXTPORTDATA PORTVEC;
-	UCHAR LogDir[260];
 
 #ifdef WIN32
 
@@ -755,13 +782,64 @@ int main(int argc, char * argv[])
 	if (!isatty(STDOUT_FILENO) || !isatty(STDIN_FILENO))
 		Redirected = 1;
 
+	 timeLoadedMS = GetTickCount();
+
 #endif
 
-	printf("G8BPQ AX25 Packet Switch System Version %s %s\n", TextVerstring, Datestring);
-	printf("%s\n", VerCopyright);
+	 printf("G8BPQ AX25 Packet Switch System Version %s %s\n", TextVerstring, Datestring);
+	 printf("%s\n", VerCopyright);
 
-	if (argc > 1 && _stricmp(argv[1], "-v") == 0)
-		return 0;
+
+	 // look for optarg format parameters
+
+	 {
+		 int val;
+		 UCHAR * ptr1;
+		 UCHAR * ptr2;
+		 int c;
+
+		 while (1)
+		 {		
+			 int option_index = 0;
+
+			 c = getopt_long(argc, argv, "l:c:d:hv", long_options, &option_index);
+
+			 // Check for end of operation or error
+
+			 if (c == -1)
+				 break;
+
+			 // Handle options
+			 switch (c)
+			 {
+			 case 'h':
+
+				 printf(HelpScreen);
+				 exit (0);
+
+			 case 'l':
+				 strcpy(LogDir, optarg);
+				 printf("cc %s\n", LogDir);
+				 break;
+
+			 case 'c':
+				 strcpy(ConfigDir, optarg);
+				 break;
+
+			 case 'd':
+				 strcpy(DataDir, optarg);
+				 break;
+
+
+			 case '?':
+				 /* getopt_long already printed an error message. */
+				 break;
+
+			 case 'v':
+				 return 0;
+			 }
+		 }
+	 }
 
 	sprintf(RlineVer, "LinBPQ%d.%d.%d", Ver[0], Ver[1], Ver[2]);
 
@@ -777,22 +855,41 @@ int main(int argc, char * argv[])
 
 #ifdef WIN32
 	GetCurrentDirectory(256, BPQDirectory);
-	GetCurrentDirectory(256, LogDirectory);
 #else
 	getcwd(BPQDirectory, 256);
-	getcwd(LogDirectory, 256);
 #endif
-	Consoleprintf("Current Directory is %s\n", BPQDirectory);
 
-	for (i = 1; i < argc; i++)
+	strcpy(ConfigDirectory, BPQDirectory);
+	strcpy(LogDirectory, BPQDirectory);
+
+	Consoleprintf("Current Directory is %s", BPQDirectory);
+
+	if (LogDir[0])
+	{
+		strcpy(LogDirectory, LogDir);
+	}
+	if (DataDir[0])
+	{
+		strcpy(BPQDirectory, DataDir);
+		Consoleprintf("Working Directory is %s", BPQDirectory);
+	}
+	if (ConfigDir[0])
+	{
+		strcpy(ConfigDirectory, ConfigDir);
+		Consoleprintf("Config Directory is %s", ConfigDirectory);
+	}
+
+	for (i = optind; i < argc; i++)
 	{
 		if (_memicmp(argv[i], "logdir=", 7) == 0)
 		{
 			strcpy(LogDirectory, &argv[i][7]);
+			Consoleprintf("Log Directory is %s\n", LogDirectory);
 			break;
 		}
 	}
 
+	Consoleprintf("Log Directory is %s", LogDirectory);
 
 	// Make sure logs directory exists
 
@@ -801,7 +898,13 @@ int main(int argc, char * argv[])
 #ifdef WIN32
 	CreateDirectory(LogDir, NULL);
 #else
-	mkdir(LogDir, S_IRWXU | S_IRWXG | S_IRWXO);
+	printf("Making Directory %s\n", LogDir);
+	i = mkdir(LogDir, S_IRWXU | S_IRWXG | S_IRWXO);
+	if (i == -1 && errno != EEXIST)
+	{
+		perror("Couldn't create log directory\n");
+		return 0;
+	}
 	chmod(LogDir, S_IRWXU | S_IRWXG | S_IRWXO);
 #endif
 
@@ -885,7 +988,7 @@ int main(int argc, char * argv[])
 
 #endif
 
-	for (i = 1; i < argc; i++)
+	for (i = optind; i < argc; i++)
 	{
 		if (_stricmp(argv[i], "chat") == 0)
 			IncludesChat = TRUE;
@@ -936,7 +1039,7 @@ int main(int argc, char * argv[])
 
 	// Start Mail if requested by command line or config
 
-	for (i = 1; i < argc; i++)
+	for (i = optind; i < argc; i++)
 	{
 		if (_stricmp(argv[i], "mail") == 0)
 			IncludesMail = TRUE;
@@ -1166,7 +1269,7 @@ int main(int argc, char * argv[])
 				DoHouseKeeping(FALSE);
 			}
 		}
-		for (i = 1; i < argc; i++)
+		for (i = optind; i < argc; i++)
 		{
 			if (_stricmp(argv[i], "tidymail") == 0)
 				DeleteRedundantMessages();
@@ -1799,6 +1902,8 @@ struct TNCINFO * TNC;
 #define CLOCK_REALTIME 0
 #define CLOCK_MONOTONIC 0
 
+
+
 int clock_gettime(int clk_id, struct timespec *t){
     mach_timebase_info_data_t timebase;
     mach_timebase_info(&timebase);
@@ -1813,7 +1918,8 @@ int clock_gettime(int clk_id, struct timespec *t){
 #endif
 #endif
 
-int GetTickCount()
+
+uint64_t GetTickCount()
 {
 	struct timespec ts;
 	clock_gettime(CLOCK_REALTIME, &ts);

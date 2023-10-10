@@ -44,7 +44,7 @@ BOOL OkToKillMessage(BOOL SYSOP, char * Call, struct MsgInfo * Msg);
 int DisplayWebForm(struct HTTPConnectionInfo * Session, struct MsgInfo * Msg, char * FileName, char * XML, char * Reply, char * RawMessage, int RawLen);
 struct HTTPConnectionInfo * AllocateWebMailSession();
 VOID SaveNewMessage(struct HTTPConnectionInfo * Session, char * MsgPtr, char * Reply, int * RLen, char * Rest, int InputLen);
-void ConvertTitletoUTF8(char * Title, char * UTF8Title);
+void ConvertTitletoUTF8(WebMailInfo * WebMail, char * Title, char * UTF8Title, int Len);
 char *stristr (char *ch1, char *ch2);
 char * ReadTemplate(char * FormSet, char * DirName, char * FileName);
 VOID DoStandardTemplateSubsitutions(struct HTTPConnectionInfo * Session, char * txtFile);
@@ -906,7 +906,7 @@ int SendWebMailHeaderEx(char * Reply, char * Key, struct HTTPConnectionInfo * Se
 		
 		if (Msg && CheckUserMsg(Msg, User->Call, User->flags & F_SYSOP))
 		{
-			char UTF8Title[128];
+			char UTF8Title[4096];
 			char  * EncodedTitle;
 			
 			// List if it is the right type and in the page range we want
@@ -934,7 +934,8 @@ int SendWebMailHeaderEx(char * Reply, char * Key, struct HTTPConnectionInfo * Se
 
 			EncodedTitle = doXMLTransparency(Msg->title);
 
-			ConvertTitletoUTF8(EncodedTitle, UTF8Title);
+			memset(UTF8Title, 0, 4096);		// In case convert fails part way through
+			ConvertTitletoUTF8(Session->WebMail, EncodedTitle, UTF8Title, 4095);
 
 			free(EncodedTitle);
 			
@@ -971,7 +972,7 @@ int ViewWebMailMessage(struct HTTPConnectionInfo * Session, char * Reply, int Nu
 	int msgLen;
 
 	char FullTo[100];
-	char UTF8Title[128];
+	char UTF8Title[4096];
 	int Index;
 	char * crcrptr;
 	char DownLoad[256] = "";
@@ -1009,7 +1010,8 @@ int ViewWebMailMessage(struct HTTPConnectionInfo * Session, char * Reply, int Nu
 
 	// make sure title is UTF 8 encoded
 
-	ConvertTitletoUTF8(Msg->title, UTF8Title);
+	memset(UTF8Title, 0, 4096);		// In case convert fails part way through
+	ConvertTitletoUTF8(Session->WebMail, Msg->title, UTF8Title, 4095);
 
 	// if a B2 message diplay B2 Header instead of a locally generated one
 
@@ -1246,17 +1248,28 @@ int ViewWebMailMessage(struct HTTPConnectionInfo * Session, char * Reply, int Nu
 			msgLen = len - 1;		// exclude NULL
 
 #else
-			int left = 2 * msgLen;
-			int len = msgLen;
+			size_t left = 2 * msgLen;
+			size_t len = msgLen;
+			int ret;
 			UCHAR * BufferBP = BufferB;
-			iconv_t * icu = NULL;
+			char * orig = MsgBytes;
+			MsgBytes[msgLen] = 0;
 
+			iconv_t * icu = Session->WebMail->iconv_toUTF8;
+				
 			if (icu == NULL)
-				icu = iconv_open("UTF-8", "CP1252");
+				icu = Session->WebMail->iconv_toUTF8 = iconv_open("UTF-8//IGNORE", "CP1252");
 
-			iconv(icu, NULL, NULL, NULL, NULL);		// Reset State Machine
-			iconv(icu, &MsgBytes, &len, (char ** __restrict__)&BufferBP, &left);
-
+			if (icu == (iconv_t) -1)
+			{
+				Session->WebMail->iconv_toUTF8 = NULL;
+				strcpy(BufferB, MsgBytes);
+			}
+			else
+			{
+				iconv(icu, NULL, NULL, NULL, NULL);		// Reset State Machine
+				ret = iconv(icu, &MsgBytes, &len, (char ** __restrict__)&BufferBP, &left);
+			}
 			free(Save);
 			Save = MsgBytes = BufferB;
 			msgLen = strlen(MsgBytes);
@@ -1406,6 +1419,11 @@ void FreeWebMailFields(WebMailInfo * WebMail)
 
 	SaveReply = WebMail->Reply;
 	SaveRlen = WebMail->RLen;
+
+#ifndef WIN32
+	if (WebMail->iconv_toUTF8)
+		iconv_close(WebMail->iconv_toUTF8);
+#endif
 
 	memset(WebMail, 0, sizeof(WebMailInfo));
 
@@ -6098,7 +6116,7 @@ int ProcessWebmailWebSock(char * MsgPtr, char * OutBuffer)
 		
 		if (Msg && CheckUserMsg(Msg, User->Call, User->flags & F_SYSOP))
 		{
-			char UTF8Title[128];
+			char UTF8Title[4096];
 			char  * EncodedTitle;
 			
 			// List if it is the right type and in the page range we want
@@ -6126,10 +6144,11 @@ int ProcessWebmailWebSock(char * MsgPtr, char * OutBuffer)
 
 			EncodedTitle = doXMLTransparency(Msg->title);
 
-			ConvertTitletoUTF8(EncodedTitle, UTF8Title);
+			memset(UTF8Title, 0, 4096);		// In case convert fails part way through
+			ConvertTitletoUTF8(Session->WebMail, EncodedTitle, UTF8Title, 4095);
 
 			free(EncodedTitle);
-			
+
 			ptr += sprintf(ptr, "<a href=/WebMail/WM?%s&%d>%6d</a> %s %c%c %5d %-8s%-8s%-8s%s\r\n",
 				Key, Msg->number, Msg->number,
 				FormatDateAndTime((time_t)Msg->datecreated, TRUE), Msg->type,

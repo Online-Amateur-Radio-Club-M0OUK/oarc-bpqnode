@@ -23,6 +23,7 @@
     <ProjectGuid>{3766AA10-C777-4ED8-A83D-F1452DE9B666}</ProjectGuid>
     <RootNamespace>MailNode</RootNamespace>
     <Keyword>Win32Proj</Keyword>
+    <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
@@ -119,7 +120,7 @@
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>kernel32.lib;WS2_32.Lib;C:\OneDrive\Dev\Source\bpq32\libconfig\x64\Release\libconfig.lib;DbgHelp.lib;setupapi.lib;C:\OneDrive\Dev\Source\miniupnpc-2.2.3\msvc\x64\Debug\miniupnpc.lib;C:\Users\johnw\Downloads\zlib-1.2.11-binaries-x64-release\zlib-1.2.11\binaries\x64\Release\zlib.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>kernel32.lib;WS2_32.Lib;..\lib\libconfigd.lib;DbgHelp.lib;setupapi.lib;miniupnpc.lib;zlibstat.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <OutputFile>c:\LINBPQ\$(ProjectName).exe</OutputFile>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <GenerateMapFile>true</GenerateMapFile>
@@ -127,7 +128,6 @@
       <SubSystem>Console</SubSystem>
       <StackReserveSize>4000000</StackReserveSize>
       <StackCommitSize>0</StackCommitSize>
-      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
