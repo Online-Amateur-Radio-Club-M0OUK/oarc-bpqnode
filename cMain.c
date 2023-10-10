@@ -139,6 +139,7 @@ extern BOOL ADIFLogEnabled;
 extern UCHAR LogDirectory[260];
 extern BOOL EventsEnabled;
 extern BOOL SaveAPRSMsgs;
+BOOL M0LTEMap = FALSE;
 
 //TNCTABLE	DD	0
 //NUMBEROFSTREAMS	DD	0
@@ -788,6 +789,8 @@ BOOL Start()
 	ADIFLogEnabled = cfg->C_ADIF;
 	EventsEnabled = cfg->C_EVENTS;
 	SaveAPRSMsgs = cfg->C_SaveAPRSMsgs;
+	M0LTEMap = cfg->C_M0LTEMap;
+
 
 	// Get pointers to PASSWORD and APPL1 commands
 
@@ -939,7 +942,8 @@ BOOL Start()
 		PORT->QUAL_ADJUST = (UCHAR)PortRec->QUALADJUST;
 	
 		PORT->DIGIFLAG = PortRec->DIGIFLAG;
-		PORT->DIGIPORT = PortRec->DIGIPORT;
+		if (PortRec->DIGIPORT && CanPortDigi(PortRec->DIGIPORT))
+			PORT->DIGIPORT = PortRec->DIGIPORT;
 		PORT->DIGIMASK = PortRec->DIGIMASK;
 		PORT->USERS = (UCHAR)PortRec->USERS;
 
@@ -1073,6 +1077,8 @@ BOOL Start()
 			KISS->KISSCMDLEN = KissEncode(KissString, KISS->KISSCMD, KissLen);
 			KISS->KISSCMD = realloc(KISS->KISSCMD, KISS->KISSCMDLEN);
 		}
+
+		PORT->SendtoM0LTEMap = PortRec->SendtoM0LTEMap;
 
 		if (PortRec->BBSFLAG)						// Appl 1 not permitted - BBSFLAG=NOBBS
 			PORT->PERMITTEDAPPLS &= 0xfffffffe;		// Clear bottom bit
@@ -2075,7 +2081,6 @@ VOID TIMERINTERRUPT()
 
 		L3FastTimer();
 		L4TimerProc();
-
 	}
 
 	// SEE IF ANY FRAMES TO TRACE
