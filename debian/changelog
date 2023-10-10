@@ -1,3 +1,9 @@
+linbpq (6.0.24.15-1~bpo11+1) bullseye; urgency=medium
+
+  * Upstream revision 
+
+ -- Dave Hibberd <d@vehibberd.com>  Tue, 10 Oct 2023 22:27:37 +0100
+
 linbpq (6.0.24.2-1~bpo11+1) bullseye; urgency=medium
 
   * Initial release. 
