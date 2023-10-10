@@ -103,6 +103,7 @@ void SaveAPRSMessage(struct APRSMESSAGE * ptr);
 void ClearSavedMessages();
 void GetSavedAPRSMessages();
 static VOID GPSDConnect(void * unused);
+int CanPortDigi(int Port);
 
 extern int SemHeldByAPI;
 extern int APRSMONDECODE();
@@ -664,9 +665,10 @@ Dll BOOL APIENTRY Init_APRS()
 	memset(&CrossPortMap[0][0], 0, sizeof(CrossPortMap));
 	memset(&APRSBridgeMap[0][0], 0, sizeof(APRSBridgeMap));
 
-	for (i = 1; i <= 32; i++)
+	for (i = 1; i <= MaxBPQPortNo; i++)
 	{
-		CrossPortMap[i][i] = TRUE;			// Set Defaults - Same Port
+		if (CanPortDigi(i))
+			CrossPortMap[i][i] = TRUE;		// Set Defaults - Same Port
 		CrossPortMap[i][0] = TRUE;			// and APRS-IS
 	}
 
@@ -1945,7 +1947,7 @@ static int APRSProcessLine(char * buf)
 		{
 			SendTo = atoi(ptr);				// this gives zero for IS
 	
-			if (SendTo > 32)
+			if (SendTo > MaxBPQPortNo)
 				return FALSE;
 
 			Object->PortMap[SendTo] = TRUE;	
@@ -2175,6 +2177,12 @@ static int APRSProcessLine(char * buf)
 		if (GetPortTableEntryFromPortNum(Port) == NULL)
 			return FALSE;
 
+		// Check that port can digi (SCS Pactor can't set digi'd bit in calls)
+
+		if (CanPortDigi(Port) == 0)
+			return FALSE;
+
+
 		CrossPortMap[Port][Port] = FALSE;	// Cancel Default mapping
 		CrossPortMap[Port][0] = FALSE;		// Cancel Default APRSIS
 
@@ -2218,7 +2226,7 @@ static int APRSProcessLine(char * buf)
 		{
 			DigiTo = atoi(ptr);				// this gives zero for IS
 	
-			if (DigiTo > 32)
+			if (DigiTo > MaxBPQPortNo)
 				return FALSE;
 
 			APRSBridgeMap[Port][DigiTo] = TRUE;	
@@ -5238,6 +5246,7 @@ int DecodeAPRSPayload(char * Payload, struct STATIONRECORD * Station)
 			DecodeLocationString(Payload + 18, Object);
 		
 		Object->TimeLastUpdated = time(NULL);
+		Object->LastPort = Station->LastPort;
 		Station->Object = Object;
 		return 0;
 
@@ -8168,6 +8177,8 @@ VOID APRSCMD(TRANSPORTENTRY * Session, char * Bufferptr, char * CmdTail, CMDX * 
 			else
 				Bufferptr = Cmdprintf(Session, Bufferptr, "but not connected\r");
 		}
+
+		SendCommandReply(Session, REPLYBUFFER, (int)(Bufferptr - (char *)REPLYBUFFER));
 		return;
 	}
 
@@ -8844,7 +8855,7 @@ int GetAPRSPageInfo(char * Buffer, double N, double S, double W, double E, int a
 					if (lastLat != ptr->Lat)
 						Len += sprintf(&Buffer[Len],"%.4f,%.4f,\r\n|", ptr->Lat, ptr->Lon);		//Add current position to end of track
 					else
-						Len += sprintf(&Buffer[Len],"\r\n|", ptr->Lat, ptr->Lon);
+						Len += sprintf(&Buffer[Len],"\r\n|");
 				}
 			}
 		}

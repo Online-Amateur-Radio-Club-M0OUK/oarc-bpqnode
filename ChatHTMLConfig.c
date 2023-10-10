@@ -37,6 +37,7 @@ extern char OurNode[10];
 
 extern char PassError[];
 extern char BusyError[];
+extern int chatPaclen;
 
 extern char NodeTail[];
 extern BOOL APRSApplConnected;
@@ -317,6 +318,10 @@ VOID SaveChatInfo(struct HTTPConnectionInfo * Session, char * MsgPtr, char * Rep
 		ChatApplNum = atoi(Temp);
 		GetParam(input, "Streams=", Temp);
 		MaxChatStreams = atoi(Temp);
+		GetParam(input, "Paclen=", Temp);
+		chatPaclen = atoi(Temp);
+		if (chatPaclen < 60)
+			chatPaclen = 60;
 
 		GetParam(input, "nodes=", Nodes);
 
@@ -503,7 +508,7 @@ scan:
 	
 	Len = sprintf(Reply, ChatConfigTemplate,
 		OurNode, Key, Key, Key,
-		ChatApplNum, MaxChatStreams, Nodes, Position,
+		ChatApplNum, MaxChatStreams, Nodes, chatPaclen, Position,
 		(PopupMode) ? UNC  : CHKD, 
 		(PopupMode) ? CHKD  : UNC,  Text, ptr2);
 
@@ -520,9 +525,9 @@ VOID SendChatStatusPage(char * Reply, int * ReplyLen, char * Key)
 	char * Topic;
 	LINK *link;
 
-	char Streams[8192];
-	char Users[8192];
-	char Links[8192];
+	char Streams[65536];
+	char Users[65536];
+	char Links[65536];
 
 	ChatCIRCUIT * conn;
 	int i = 0, n; 

@@ -22,6 +22,10 @@
 #define LIBCONFIG_STATIC
 #include <libconfig.h>
 
+#ifndef WIN32
+#include <iconv.h>
+#endif
+
 #include "compatbits.h"
 
 #ifndef LINBPQ
@@ -941,6 +945,23 @@ typedef struct SocketConnectionInfo
 
 } SocketConn;
 
+// FBB reject.sys like filters
+
+typedef struct FBBFILTER
+{
+	struct FBBFILTER * Next;
+	char Action;
+	char Type;
+	char From[10];
+	char AT[10];
+	char TO[10];
+	char BID[16];
+	int MaxLen;
+
+} FBBFilter;
+
+extern FBBFilter * Filters;
+
 typedef struct KEYVALUES
 {
 	char * Key;
@@ -994,6 +1015,11 @@ typedef struct WEBMAILINFO
 	BOOL Packet;
 
 	int CurrentMessageIndex;	// Index of message currently displayed (for Prev and Next)
+#ifdef WIN32
+	void * iconv_toUTF8;	// Used on Linux for char set conversion
+#else
+	iconv_t * iconv_toUTF8;		// Used on Linux for char set conversion
+#endif
 
 }WebMailInfo;
 
@@ -1210,8 +1236,8 @@ BOOL ConnecttoBBS (struct UserInfo * user);
 BOOL SetupNewBBS(struct UserInfo * user);
 VOID CreateRegBackup();
 VOID SaveFilters(HWND hDlg);
-BOOL CheckRejFilters(char * From, char * To, char * ATBBS, char * BID, char Type);
-BOOL CheckHoldFilters(char * From, char * To, char * ATBBS, char * BID);
+BOOL CheckRejFilters(char * From, char * To, char * ATBBS, char * BID, char Type, int Len);
+BOOL CheckHoldFilters(struct MsgInfo * Msg, char * From, char * To, char * ATBBS, char * BID);
 BOOL CheckifLocalRMSUser(char * FullTo);
 VOID DoWPLookup(ConnectionInfo * conn, struct UserInfo * user, char Type, char *Context);
 BOOL wildcardcompare(char * Target, char * Match);
