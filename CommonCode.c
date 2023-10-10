@@ -68,7 +68,11 @@ VOID WriteMiniDump();
 void printStack(void);
 char * FormatMH(PMHSTRUC MH, char Format);
 void WriteConnectLog(char * fromCall, char * toCall, UCHAR * Mode);
+void SendDataToPktMap(char *Msg);
+
 extern BOOL LogAllConnects;
+extern BOOL M0LTEMap;
+
 
 extern VOID * ENDBUFFERPOOL;
 
@@ -2095,9 +2099,28 @@ DllExport struct PORTCONTROL * APIENTRY GetPortTableEntryFromSlot(int portslot)
 	return PORTVEC;
 }
 
+int CanPortDigi(int Port)
+{
+	struct PORTCONTROL * PORTVEC = GetPortTableEntryFromPortNum(Port);
+	struct TNCINFO * TNC;
+
+	if (PORTVEC == NULL)
+		return FALSE;
+
+	TNC = PORTVEC->TNC;
+
+	if (TNC == NULL)
+		return TRUE;
+
+	if (TNC->Hardware == H_SCS || TNC->Hardware == H_TRK || TNC->Hardware == H_TRKM || TNC->Hardware == H_WINRPR)
+		return FALSE;
+
+	return TRUE;
+}
+
 struct PORTCONTROL * APIENTRY GetPortTableEntryFromPortNum(int portnum)
 {
-	struct PORTCONTROL * PORTVEC=PORTTABLE;
+	struct PORTCONTROL * PORTVEC = PORTTABLE;
 
 	do
 	{
@@ -2337,6 +2360,13 @@ BOOL WriteCOMBlock(HANDLE fd, char * Block, int BytesToWrite)
 	DWORD       BytesWritten;
 	DWORD       ErrorFlags;
 	COMSTAT     ComStat;
+	DWORD Mask = 0;
+	int Err;
+
+	Err = GetCommModemStatus(fd, &Mask);
+
+	if ((Mask & MS_CTS_ON) == 0)		// trap com0com other end not open
+		return TRUE;
 
 	fWriteStat = WriteFile(fd, Block, BytesToWrite,
 	                       &BytesWritten, NULL );
@@ -3302,6 +3332,9 @@ VOID SendLocation()
 
 	SendReportMsg((char *)&AXMSG.DEST, Len + 16);
 
+	if (M0LTEMap)
+		SendDataToPktMap("");
+
 	return;
 
 }
@@ -4088,10 +4121,10 @@ VOID SaveUIConfig()
 	config_destroy(&cfg);
 }
 
+int GetRegConfig();
+
 VOID GetUIConfig()
 {
-#ifdef LINBPQ
-
 	char Key[100];
 	char CfgFN[256];
 	char Digis[100];
@@ -4118,7 +4151,13 @@ VOID GetUIConfig()
 
 	if (stat(CfgFN, &STAT) == -1)
 	{
+		// No file. If Windows try to read from registy
+
+#ifndef LINBPQ 
+		GetRegConfig();
+#else
 		Debugprintf("UIUtil Config File not found\n");
+#endif
 		return;
 	}
 
@@ -4158,8 +4197,42 @@ VOID GetUIConfig()
 		}
 	}
 
-#else
 
+	_beginthread(UIThread, 0, NULL);
+
+}
+
+#ifndef LINBPQ
+
+int GetIntValue(config_setting_t * group, char * name)
+{
+	config_setting_t *setting;
+
+	setting = config_setting_get_member (group, name);
+	if (setting)
+		return config_setting_get_int (setting);
+
+	return 0;
+}
+
+BOOL GetStringValue(config_setting_t * group, char * name, char * value)
+{
+	const char * str;
+	config_setting_t *setting;
+
+	setting = config_setting_get_member (group, name);
+	if (setting)
+	{
+		str =  config_setting_get_string (setting);
+		strcpy(value, str);
+		return TRUE;
+	}
+	value[0] = 0;
+	return FALSE;
+}
+
+int GetRegConfig()
+{
 	int retCode, Vallen, Type, i;
 	char Key[80];
 	char Size[80];
@@ -4234,13 +4307,8 @@ VOID GetUIConfig()
 
 	SaveUIConfig();
 
-#endif
-
-	_beginthread(UIThread, 0, NULL);
-
+	return TRUE;
 }
-
-#ifndef LINBPQ
 
 INT_PTR CALLBACK ChildDialogProc(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -4748,6 +4816,540 @@ void GetPortCTEXT(TRANSPORTENTRY * Session, char * Bufferptr, char * CmdTail, CM
 	else
 		Debugprintf("CTEXT Read for ports %s\r", &PortList[1]);
 }
+
+SOCKET OpenHTTPSock(char * Host)
+{
+	SOCKET sock = 0;
+	struct sockaddr_in destaddr;
+	struct sockaddr_in sinx; 
+	int addrlen=sizeof(sinx);
+	struct hostent * HostEnt;
+	int err;
+	u_long param=1;
+	BOOL bcopt=TRUE;
+		
+	destaddr.sin_family = AF_INET; 
+	destaddr.sin_port = htons(80);
+
+	//	Resolve name to address
+
+	HostEnt = gethostbyname (Host);
+		 
+	if (!HostEnt)
+	{
+		err = WSAGetLastError();
+
+		Debugprintf("Resolve Failed for %s %d %x", "api.winlink.org", err, err);
+		return 0 ;			// Resolve failed
+	}
+	
+	memcpy(&destaddr.sin_addr.s_addr,HostEnt->h_addr,4);	
+	
+	//   Allocate a Socket entry
+
+	sock = socket(AF_INET,SOCK_STREAM,0);
+
+	if (sock == INVALID_SOCKET)
+  	 	return 0; 
+ 
+	setsockopt (sock, SOL_SOCKET, SO_REUSEADDR, (const char FAR *)&bcopt,4);
+
+	sinx.sin_family = AF_INET;
+	sinx.sin_addr.s_addr = INADDR_ANY;
+	sinx.sin_port = 0;
+
+	if (bind(sock, (struct sockaddr *) &sinx, addrlen) != 0 )
+  	 	return FALSE; 
+
+	if (connect(sock,(struct sockaddr *) &destaddr, sizeof(destaddr)) != 0)
+	{
+		err=WSAGetLastError();
+		closesocket(sock);
+		return 0;
+	}
+
+	return sock;
+}
+
+static char HeaderTemplate[] = "POST %s HTTP/1.1\r\n"
+	"Accept: application/json\r\n"
+//	"Accept-Encoding: gzip,deflate,gzip, deflate\r\n"
+	"Content-Type: application/json\r\n"
+	"Host: %s:%d\r\n"
+	"Content-Length: %d\r\n"
+	//r\nUser-Agent: BPQ32(G8BPQ)\r\n"
+//	"Expect: 100-continue\r\n"
+	"\r\n";
+
+
+VOID SendWebRequest(SOCKET sock, char * Host, char * Request, char * Params, int Len, char * Return)
+{
+	int InputLen = 0;
+	int inptr = 0;
+	char Buffer[4096];
+	char Header[256];
+	char * ptr, * ptr1;
+	int Sent;
+
+	sprintf(Header, HeaderTemplate, Request, Host, 80, Len, Params);
+	Sent = send(sock, Header, (int)strlen(Header), 0);
+	Sent = send(sock, Params, (int)strlen(Params), 0);
+
+	if (Sent == -1)
+	{
+		int Err = WSAGetLastError();
+		Debugprintf("Error %d from Web Update send()", Err);
+		return;
+	}
+
+	while (InputLen != -1)
+	{
+		InputLen = recv(sock, &Buffer[inptr], 4096 - inptr, 0);
+
+		if (InputLen == -1 || InputLen == 0)
+		{
+			int Err = WSAGetLastError();
+			Debugprintf("Error %d from Web Update recv()", Err);
+			return;
+		}
+
+		//	As we are using a persistant connection, can't look for close. Check
+		//	for complete message
+
+		inptr += InputLen;
+
+		Buffer[inptr] = 0;
+		
+		ptr = strstr(Buffer, "\r\n\r\n");
+
+		if (ptr)
+		{
+			// got header
+
+			int Hddrlen = (int)(ptr - Buffer);
+					
+			ptr1 = strstr(Buffer, "Content-Length:");
+
+			if (ptr1)
+			{
+				// Have content length
+
+				int ContentLen = atoi(ptr1 + 16);
+
+				if (ContentLen + Hddrlen + 4 == inptr)
+				{
+					// got whole response
+
+					if (strstr(Buffer, " 200 OK"))
+					{
+						if (Return)
+						{
+							memcpy(Return, ptr + 4, ContentLen); 
+							Return[ContentLen] = 0;
+						}
+						else
+							Debugprintf("Map Database update ok");
+					
+					}
+					else
+					{
+						strlop(Buffer, 13);
+						Debugprintf("Map Update Params - %s", Params);
+						Debugprintf("Map Update failed - %s", Buffer);
+					}
+					return;
+				}
+			}
+			else
+			{
+				ptr1 = strstr(_strlwr(Buffer), "transfer-encoding:");
+				
+				if (ptr1)
+				{
+					// Just accept anything until I've sorted things with Lee
+					Debugprintf("%s", ptr1);
+					Debugprintf("Web Database update ok");
+					return;
+				}
+			}
+		}
+	}
+}
+
+// https://packetnodes.spots.radio/api/NodeData/{callsign}
+
+//SendHTTPRequest(sock, "/account/exists", Message, Len, Response);
+
+#include "kiss.h"
+
+extern char MYALIASLOPPED[10];
+extern int MasterPort[MAXBPQPORTS+1];
+
+void SendDataToPktMap(char *Msg)
+{
+	SOCKET sock;
+	char Return[256];
+	char Request[64];
+	char Params[50000];
+	struct PORTCONTROL * PORT = PORTTABLE;
+	struct PORTCONTROL * SAVEPORT;
+	struct ROUTE * Routes = NEIGHBOURS;
+	int MaxRoutes = MAXNEIGHBOURS;
+		
+	int PortNo;
+	int Active;
+	uint64_t Freq;
+	int Baud;
+	int Bitrate;
+	char * Mode;
+	char * Use;
+	char * Type;
+	char * Modulation;
+
+	char locked[] = " ! ";
+	int Percent = 0;
+	int Port = 0;
+	char Normcall[10];
+	char Copy[20];
+
+	char * ptr = Params;
+
+	printf("Sending to new map\n");
+
+	sprintf(Request, "/api/NodeData/%s", MYNODECALL);
+
+//	https://packetnodes.spots.radio/swagger/index.html
+
+	// This builds the request and sends it
+
+	// Minimum header seems to be
+
+	//  "nodeAlias": "BPQ",
+	//  "location": {"locator": "IO68VL"},
+	//  "software": {"name": "BPQ32","version": "6.0.24.3"},
+
+	ptr += sprintf(ptr, "{\"nodeAlias\": \"%s\",\r\n", MYALIASLOPPED);
+
+	if (strlen(LOCATOR) == 6)
+		ptr += sprintf(ptr, "\"location\": {\"locator\": \"%s\"},\r\n", LOCATOR);
+	else
+	{
+		// Lat Lon
+
+		double myLat, myLon;
+		char LocCopy[80];
+		char * context;
+
+		strcpy(LocCopy, LOCATOR);
+
+		myLat = atof(strtok_s(LocCopy, ",:; ", &context));
+		myLon = atof(context);
+
+		ptr += sprintf(ptr, "\"location\": {\"coords\": {\"lat\": %f, \"lon\": %f}},\r\n",
+			myLat, myLon);
+
+	}
+
+#ifdef LINBPQ
+	ptr += sprintf(ptr, "\"software\": {\"name\": \"LINBPQ\",\"version\": \"%s\"},\r\n", VersionString);
+#else
+	ptr += sprintf(ptr, "\"software\": {\"name\": \"BPQ32\",\"version\": \"%s\"},\r\n", VersionString);
+#endif
+	ptr += sprintf(ptr, "\"source\": \"ReportedByNode\",\r\n");
+
+	//Ports
+
+	ptr += sprintf(ptr, "\"ports\": [");
+
+	// Get active ports
+
+	while (PORT)
+	{
+		PortNo = PORT->PORTNUMBER;
+
+		if (PORT->Hide) 
+		{
+			PORT = PORT->PORTPOINTER;
+			continue;
+		}
+
+		if (PORT->SendtoM0LTEMap == 0)
+		{
+			PORT = PORT->PORTPOINTER;
+			continue;
+		}
+
+		// Try to get port status - may not be possible with some
+
+		if (PORT->PortStopped)
+		{
+			PORT = PORT->PORTPOINTER;
+			continue;
+		}
+
+		Active = 0;
+		Freq = 0;
+		Baud = 0;
+		Mode = "ax.25";
+		Use = "";
+		Type = "RF";
+		Bitrate = 0;
+		Modulation = "FSK";
+
+		if (PORT->PORTTYPE == 0)
+		{
+			struct KISSINFO * KISS = (struct KISSINFO *)PORT;
+			NPASYINFO Port;
+
+			SAVEPORT = PORT;
+
+			if (KISS->FIRSTPORT && KISS->FIRSTPORT != KISS)
+			{
+				// Not first port on device
+
+				PORT = (struct PORTCONTROL *)KISS->FIRSTPORT;
+				Port = KISSInfo[PortNo];
+			}
+
+			Port = KISSInfo[PORT->PORTNUMBER];
+
+			if (Port)
+			{
+				// KISS like - see if connected 
+
+				if (PORT->PORTIPADDR.s_addr || PORT->KISSSLAVE)
+				{
+					// KISS over UDP or TCP
+
+					if (PORT->KISSTCP)
+					{
+						if (Port->Connected)
+							Active = 1;
+					}
+					else
+						Active = 1;		// UDP - Cant tell
+				}
+				else
+					if (Port->idComDev)			// Serial port Open
+						Active = 1;
+				
+				PORT = SAVEPORT;
+			}		
+		}
+		else if (PORT->PORTTYPE == 14)		// Loopback 
+			Active = 0;
+
+		else if (PORT->PORTTYPE == 16)		// External
+		{
+			if (PORT->PROTOCOL == 10)		// 'HF' Port
+			{
+				struct TNCINFO * TNC = TNCInfo[PortNo];
+				struct AGWINFO * AGW;
+
+				if (TNC == NULL)
+				{
+					PORT = PORT->PORTPOINTER;
+					continue;
+				}
+
+				if (TNC->RIG)
+					Freq = TNC->RIG->RigFreq * 1000000;
+
+				switch (TNC->Hardware)				// Hardware Type
+				{
+				case H_KAM:
+				case H_AEA:
+				case H_HAL:
+				case H_SERIAL:
+
+					// Serial
+
+					if (TNC->hDevice)
+						Active = 1;
+
+					break;
+
+				case H_SCS:
+				case H_TRK:
+				case H_WINRPR:
+			
+					if (TNC->HostMode)
+						Active = 1;
+
+					break;
+
+
+				case H_UZ7HO:
+
+					if (TNCInfo[MasterPort[PortNo]]->CONNECTED)
+						Active = 1;
+
+					// Try to get mode and frequency
+
+					AGW = TNC->AGWInfo;
+
+					if (AGW && AGW->isQTSM)
+					{
+						if (AGW->ModemName[0])
+						{
+							char * ptr1, * ptr2, *Context;
+
+							strcpy(Copy, AGW->ModemName);
+							ptr1 = strtok_s(Copy, " ", & Context);
+							ptr2 = strtok_s(NULL, " ", & Context);
+
+							if (Context)
+							{
+								Modulation = Copy;
+
+								if (strstr(ptr1, "BPSK") || strstr(ptr1, "AFSK"))
+								{
+									Baud = Bitrate = atoi(Context);
+								}
+								else if (strstr(ptr1, "QPSK"))
+								{
+									Modulation = "QPSK";
+									Bitrate = atoi(Context);
+									Baud = Bitrate /2;
+								}
+							}
+						}
+					}
+
+					break;
+
+				case H_WINMOR:
+				case H_V4:
+
+				case H_MPSK:
+				case H_FLDIGI:
+				case H_UIARQ:
+				case H_ARDOP:
+				case H_VARA:
+				case H_KISSHF:
+				case H_FREEDATA:
+
+					// TCP
+
+					Mode = Modenames[TNC->Hardware];
+
+					if (TNC->CONNECTED)
+						Active = 1;
+
+					break;
+
+				case H_TELNET:
+
+					Active = 1;
+					Type = "Internet";
+					Mode = "";
+				}
+			}
+			else
+			{
+				// External but not HF - AXIP, BPQETHER VKISS, ??
+
+				struct _EXTPORTDATA * EXTPORT = (struct _EXTPORTDATA *)PORT;
+				Type = "Internet";
+				Active = 1;
+			}
+		}
+
+		if (Active)
+		{
+			ptr += sprintf(ptr, "{\"id\": \"%d\",\"linkType\": \"%s\","
+			"\"freq\": \"%lld\",\"mode\": \"%s\",\"modulation\": \"%s\","
+			"\"baud\": \"%d\",\"bitrate\": \"%d\",\"usage\": \"%s\",\"comment\": \"%s\"},\r\n",
+			PortNo, Type, 
+			Freq, Mode, Modulation,
+			Baud, Bitrate, "Access", PORT->PORTDESCRIPTION);
+		}
+	
+		PORT = PORT->PORTPOINTER;
+	}
+
+	ptr -= 3;
+	ptr += sprintf(ptr, "],\r\n");
+
+	//	Neighbours
+
+	ptr += sprintf(ptr, "\"neighbours\": [\r\n");
+
+	while (MaxRoutes--)
+	{
+		if (Routes->NEIGHBOUR_CALL[0] != 0)
+			if (Routes->NEIGHBOUR_LINK && Routes->NEIGHBOUR_LINK->L2STATE >= 5)
+			{
+				ConvFromAX25(Routes->NEIGHBOUR_CALL, Normcall);
+				strlop(Normcall, ' ');
+
+				ptr += sprintf(ptr, 
+				"{\"node\": \"%s\", \"port\": \"%d\", \"quality\":  \"%d\"},\r\n",
+				Normcall, Routes->NEIGHBOUR_PORT, Routes->NEIGHBOUR_QUAL);
+			}
+
+		Routes++;
+	}
+
+	ptr -= 3;
+	ptr += sprintf(ptr, "]}");
+
+/*
+{
+  "nodeAlias": "BPQ",
+  "location": {"locator": "IO92KX"},
+  "software": {"name": "BPQ32","version": "6.0.24.11 Debug Build "},
+  "contact": "G8BPQ",
+  "sysopComment": "Testing",
+  "source": "ReportedByNode"
+}
+
+ "ports": [
+    {
+      "id": "string",
+      "linkType": "RF",
+      "freq": 0,
+      "mode": "string",
+      "modulation": "string",
+      "baud": 0,
+      "bitrate": 0,
+      "usage": "Access",
+      "comment": "string"
+    }
+  ],
+
+
+
+*/
+	//  "contact": "string",
+	//  "neighbours": [{"node": "G7TAJ","port": "30"}]
+
+	sock = OpenHTTPSock("packetnodes.spots.radio");
+
+	if (sock == 0)
+		return;
+
+	SendWebRequest(sock, "packetnodes.spots.radio", Request, Params, strlen(Params), Return);
+	closesocket(sock);
+}
+
+//	="{\"neighbours\": [{\"node\": \"G7TAJ\",\"port\": \"30\"}]}";
+
+//'POST' \
+//  'https://packetnodes.spots.radio/api/NodeData/GM8BPQ' \
+//  -H 'accept: */*' \
+//  -H 'Content-Type: application/json' \
+//  -d '{
+//  "nodeAlias": "BPQ",
+//  "location": {"locator": "IO68VL"},
+//  "software": {"name": "BPQ32","version": "6.0.24.3"},
+//  "contact": "string",
+//  "neighbours": [{"node": "G7TAJ","port": "30"}]
+//}'
+
+
+
+
 
 
 

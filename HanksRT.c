@@ -75,6 +75,7 @@ char ChatWelcomeMsg[1000];
 char Position[81] = "";
 char PopupText[260] = "";
 int PopupMode = 0;
+int chatPaclen = 236;
 
 char RtKnown[MAX_PATH] = "RTKnown.txt";
 char RtUsr[MAX_PATH] = "STUsers.txt";
@@ -96,6 +97,7 @@ KNOWNNODE * known_hd = NULL;
 int ChatTmr = 0;
 
 BOOL NeedStatus = FALSE;
+
 
 char Verstring[80];
 
@@ -597,7 +599,9 @@ VOID ProcessChatLine(ChatCIRCUIT * conn, struct UserInfo * user, char* OrigBuffe
 		Buffer = BufferB;
 
 #else
-		int left = 65536;
+		size_t left = 65536;
+		size_t clen = len;
+
 		UCHAR * BufferBP = BufferB;
 		struct user_t * icu = conn->u.user;
 
@@ -605,22 +609,22 @@ VOID ProcessChatLine(ChatCIRCUIT * conn, struct UserInfo * user, char* OrigBuffe
 		{
 			if (icu->iconv_toUTF8 == NULL)
 			{
-				icu->iconv_toUTF8 = iconv_open("UTF-8", icu->Codepage);
+				icu->iconv_toUTF8 = iconv_open("UTF-8//IGNORE", icu->Codepage);
 			
 				if (icu->iconv_toUTF8 == (iconv_t)-1)
-					icu->iconv_toUTF8 = iconv_open("UTF-8", "CP1252");
+					icu->iconv_toUTF8 = iconv_open("UTF-8//IGNORE", "CP1252");
 			}
 
 			iconv(icu->iconv_toUTF8, NULL, NULL, NULL, NULL);		// Reset State Machine
-			iconv(icu->iconv_toUTF8, &Buffer, &len, (char ** __restrict__)&BufferBP, &left);
+			iconv(icu->iconv_toUTF8, &Buffer, &clen, (char ** __restrict__)&BufferBP, &left);
 		}
 		else
 		{
 			if (link_toUTF8 == NULL)
-				link_toUTF8 = iconv_open("UTF-8", "CP1252");
+				link_toUTF8 = iconv_open("UTF-8//IGNORE", "CP1252");
 
 			iconv(link_toUTF8, NULL, NULL, NULL, NULL);		// Reset State Machine
-			iconv(link_toUTF8, &Buffer, &len, (char ** __restrict__)&BufferBP, &left);
+			iconv(link_toUTF8, &Buffer, &clen, (char ** __restrict__)&BufferBP, &left);
 		}
 		len = 65536 - left;
 		Buffer = BufferB;
@@ -1121,12 +1125,12 @@ void rduser(USER *user)
 	// Open an iconv decriptor for each conversion
 
 	if (user->Codepage[0])
-		user->iconv_toUTF8 = iconv_open("UTF-8", user->Codepage);
+		user->iconv_toUTF8 = iconv_open("UTF-8//IGNORE", user->Codepage);
 	else
 		user->iconv_toUTF8 = (iconv_t)-1;
 				
 	if (user->iconv_toUTF8 == (iconv_t)-1)
-		user->iconv_toUTF8 = iconv_open("UTF-8", "CP1252");
+		user->iconv_toUTF8 = iconv_open("UTF-8//IGNORE", "CP1252");
 		
 
 	if (user->Codepage[0])
@@ -1135,7 +1139,7 @@ void rduser(USER *user)
 		user->iconv_fromUTF8 = (iconv_t)-1;
 
 	if (user->iconv_fromUTF8 == (iconv_t)-1)
-		user->iconv_fromUTF8 = iconv_open("CP1252", "UTF-8");
+		user->iconv_fromUTF8 = iconv_open("CP1252//IGNORE", "UTF-8");
 #endif
 	}
 }
@@ -1936,7 +1940,7 @@ void put_text(ChatCIRCUIT * circuit, USER * user, UCHAR * buf)
 {
 	UCHAR BufferB[4096];
 
-	// Text is UTF-8 internally. If use doen't want UTF-8. convert to Node's locale
+	// Text is UTF-8 internally. If user doen't want UTF-8. convert to Node's locale
 
 	if (circuit->u.user->rtflags & u_noUTF8)
 	{
@@ -1957,9 +1961,9 @@ void put_text(ChatCIRCUIT * circuit, USER * user, UCHAR * buf)
 		BufferB[blen + 2] = 0;
 #else
 
-		int left = 4096;
+		size_t left = 4096;
 		UCHAR * BufferBP = BufferB;
-		int len = strlen(buf) + 1;
+		size_t len = strlen(buf) + 1;
 		struct user_t * icu = circuit->u.user;
 
 		if (icu->iconv_fromUTF8 == NULL)
@@ -1967,7 +1971,7 @@ void put_text(ChatCIRCUIT * circuit, USER * user, UCHAR * buf)
 			icu->iconv_fromUTF8 = iconv_open(icu->Codepage, "UTF-8");
 		
 			if (icu->iconv_fromUTF8 == (iconv_t)-1)
-				icu->iconv_fromUTF8 = iconv_open("CP1252", "UTF-8");
+				icu->iconv_fromUTF8 = iconv_open("CP1252//IGNORE", "UTF-8");
 		}
 
 		iconv(icu->iconv_fromUTF8, NULL, NULL, NULL, NULL);		// Reset State Machine
@@ -3863,7 +3867,7 @@ int ChatConnected(int Stream)
 		
 				if (conn->rtcflags == p_linkini)
 				{
-					conn->paclen = 236;
+					conn->paclen = chatPaclen;
 		
 					// Run first line of connect script
 
@@ -3882,6 +3886,9 @@ int ChatConnected(int Stream)
 
 			if (paclen == 0)
 				paclen = 256;
+
+			if (paclen > chatPaclen)
+				paclen = chatPaclen;
 
 			conn->paclen = paclen;
 
@@ -4163,11 +4170,18 @@ BOOL GetChatConfig(char * ConfigName)
 
 	ChatApplNum = GetIntValue(group, "ApplNum");
 	MaxChatStreams = GetIntValue(group, "MaxStreams");
+	chatPaclen = GetIntValue(group, "chatPaclen");
 	GetStringValue(group, "OtherChatNodes", OtherNodesList);
 	GetStringValue(group, "ChatWelcomeMsg", ChatWelcomeMsg);
 	GetStringValue(group, "MapPosition", Position);
 	GetStringValue(group, "MapPopup", PopupText);
 	PopupMode = GetIntValue(group, "PopupMode");
+
+	if (chatPaclen == 0)
+		chatPaclen = 236;
+
+	if (chatPaclen < 60)
+		chatPaclen = 60;
 
 
 	return EXIT_SUCCESS;
@@ -4187,6 +4201,7 @@ VOID SaveChatConfigFile(char * ConfigName)
 
 	SaveIntValue(group, "ApplNum", ChatApplNum);
 	SaveIntValue(group, "MaxStreams", MaxChatStreams);
+	SaveIntValue(group, "chatPaclen", chatPaclen);
 	SaveStringValue(group, "OtherChatNodes", OtherNodesList);
 	SaveStringValue(group, "ChatWelcomeMsg", ChatWelcomeMsg);
 

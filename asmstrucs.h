@@ -689,6 +689,7 @@ typedef struct PORTCONTROL
 	time_t LastSmartIDTime;		// For SmartID - ID only if packets sent recently
 	time_t SmartIDNeeded;		// Time to send next smart ID
 	time_t SmartIDInterval;		// Smart ID Interval (Secs)
+	int SendtoM0LTEMap;
 
 }	PORTCONTROLX, *PPORTCONTROL;
 
@@ -889,6 +890,9 @@ typedef struct _LINKTABLE
 	UCHAR	L2RETRIES;		// RETRY COUNTER
 
 	UCHAR	SESSACTIVE;		// SET WHEN WE ARE SURE SESSION IS UP
+
+	UINT	APPLMASK;		// Used when XIR processed
+	VOID *	ALIASPTR;
 
 	USHORT	KILLTIMER;		// TIME TO KILL IDLE LINK
 
