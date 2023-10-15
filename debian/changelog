@@ -1,4 +1,4 @@
-linbpq (6.0.24.15-2) unstable; urgency=medium
+linbpq (6.0.24.15-jammy2) jammy; urgency=medium
 
   * debian/conffiles introduced to stop linbpq overwriting config files
     - Thanks to Mark 2M0IIG for raising concern about this bug!
