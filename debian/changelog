@@ -1,10 +1,17 @@
-linbpq (6.0.24.15-jammy1) jammy; urgency=medium
+linbpq (6.0.24.15-2) unstable; urgency=medium
 
-  * Initial Release 
+  * debian/conffiles introduced to stop linbpq overwriting config files
+    - Thanks to Mark 2M0IIG for raising concern about this bug!
 
- -- Dave Hibberd <d@vehibberd.com>  Tue, 10 Oct 2023 22:25:05 +0100
+ -- Dave Hibberd <d@vehibberd.com>  Sun, 15 Oct 2023 21:45:24 +0100
 
-linbpq (6.0.24.2-jammy1) jammy; urgency=medium
+linbpq (6.0.24.15-1) unstable; urgency=medium
+
+  * New upstream release 
+
+ -- Dave Hibberd <d@vehibberd.com>  Tue, 10 Oct 2023 22:19:48 +0100
+
+linbpq (6.0.24.2-1) unstable; urgency=medium
 
   * Initial release. 
 
