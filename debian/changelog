@@ -1,3 +1,9 @@
+linbpq (6.0.24.15-2~bpo12+1) bookworm; urgency=medium
+
+  * Rebuild for bookworm.
+
+ -- Dave Hibberd <d@vehibberd.com>  Sun, 15 Oct 2023 21:47:48 +0100
+
 linbpq (6.0.24.15-2) unstable; urgency=medium
 
   * debian/conffiles introduced to stop linbpq overwriting config files
