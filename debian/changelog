@@ -1,8 +1,8 @@
-linbpq (6.0.24.16-1) UNRELEASED; urgency=medium
+linbpq (6.0.24.16-1) unstable; urgency=medium
 
   * New Upstream release 
 
- -- Dave Hibberd <d@vehibberd.com>  Tue, 31 Oct 2023 22:43:58 +0000
+ -- Dave Hibberd <d@vehibberd.com>  Tue, 31 Oct 2023 22:50:01 +0000
 
 linbpq (6.0.24.15-2) unstable; urgency=medium
 
