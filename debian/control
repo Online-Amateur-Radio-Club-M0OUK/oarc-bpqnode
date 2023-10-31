@@ -4,10 +4,10 @@ Priority: optional
 Maintainer: Debian Hamradio Maintainers <debian-hams@lists.debian.org>
 Uploaders:
  Dave Hibberd <d@vehibberd.com>,
-Standards-Version: 4.6.1.0
-Vcs-Browser: https://salsa.debian.org/debian-hamradio-team/linbpq
-Vcs-Git: https://salsa.debian.org/debian-hamradio-team/linbpq.git
-Homepage: http://users.telenet.be/on4qz
+Standards-Version: 4.6.2.0
+Vcs-Browser:
+Vcs-Git:
+Homepage: https://www.cantab.net/users/john.wiseman/Documents/
 Build-Depends: debhelper-compat (= 12), libssl-dev, libminiupnpc-dev, libpcap-dev, libconfig-dev, zlib1g-dev
 Rules-Requires-Root: no
 
