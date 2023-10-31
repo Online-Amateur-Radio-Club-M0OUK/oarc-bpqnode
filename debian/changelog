@@ -1,16 +1,14 @@
-<<<<<<< HEAD
-linbpq (6.0.24.15-2~bpo11+1) bullseye; urgency=medium
+linbpq6.0.24.16-1~bpo12+1) bullseye; urgency=medium
 
   * Rebuild for bullseye.
 
- -- Dave Hibberd <d@vehibberd.com>  Sun, 15 Oct 2023 21:50:46 +0100
-=======
+ -- Dave Hibberd <d@vehibberd.com>  Tue, 31 Oct 2023 22:54:31 +0000
+
 linbpq (6.0.24.16-1) unstable; urgency=medium
 
   * New Upstream release 
 
  -- Dave Hibberd <d@vehibberd.com>  Tue, 31 Oct 2023 22:50:01 +0000
->>>>>>> debian/latest
 
 linbpq (6.0.24.15-2) unstable; urgency=medium
 
