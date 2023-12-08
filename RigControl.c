@@ -175,8 +175,9 @@ char FTRXModes[8][6] = {"LSB", "USB", "CW", "AM", "FM", "RTTY", "PKT", ""};
 
 char KenwoodModes[16][6] = {"????", "LSB",  "USB", "CW", "FM", "AM", "FSK", "????"};
 
-//char FT2000Modes[16][6] = {"????", "LSB",  "USB", "CW", "FM", "AM", "FSK", "PKT-L", "FSK-R", "PKT-FM", "FM-N", "PKT-U", "????"};
 char FT2000Modes[16][6] = {"????", "LSB",  "USB", "CW", "FM", "AM", "FSK", "CW-R", "PKT-L", "FSK-R", "PKT-FM", "FM-N", "PKT-U", "????"};
+
+char FTDX10Modes[16][9] = {"????", "LSB",  "USB", "CW-U", "FM", "AM", "RTTY-L", "CW-L", "DATA-L", "RTTY-U", "DATA-FM", "FM-N", "DATA-U", "AM-N", "PSK", "DATA-FM-N"};
 
 char FT991AModes[16][9] = {"????", "LSB",  "USB", "CW-U", "FM", "AM", "RTTY-LSB", "CW-L", "DATA-LSB", "RTTY-USB", "DATA-FM", "FM-N", "DATA-USB", "AM-N", "C4FM", "????"};
 
@@ -202,7 +203,7 @@ char * RigWebPage = 0;
 int RigWebPageLen = 0;
 
 
-struct RIGPORTINFO * PORTInfo[34] = {NULL};		// Records are Malloc'd
+struct RIGPORTINFO * PORTInfo[MAXBPQPORTS + 2] = {NULL};		// Records are Malloc'd
 
 struct RIGINFO * DLLRIG = NULL;			// Rig record for dll PTT interface (currently only for UZ7HO);
 
@@ -564,6 +565,7 @@ VOID Rig_PTTEx(struct RIGINFO * RIG, BOOL PTTState, struct TNCINFO * TNC)
 		case ICOM:
 		case KENWOOD:
 		case FT2000:
+		case FTDX10:
 		case FT991A:
 		case FLEX:
 		case NMEA:
@@ -782,7 +784,7 @@ int Rig_Command(TRANSPORTENTRY * Session, char * Command)
 		{
 			RIG = &PORT->Rigs[i];
 
-			if (RIG->BPQPort & (1 << Port))
+			if (RIG->BPQPort & ((uint64_t)1 << Port))
 				goto portok;
 		}
 	}
@@ -1285,6 +1287,7 @@ int Rig_CommandEx(struct RIGPORTINFO * PORT, struct RIGINFO * RIG, TRANSPORTENTR
 		case KENWOOD:
 		case FT991A:
 		case FT2000:
+		case FTDX10:
 		case FLEX:
 		case NMEA:
 
@@ -1870,6 +1873,7 @@ int Rig_CommandEx(struct RIGPORTINFO * PORT, struct RIGINFO * RIG, TRANSPORTENTR
 
 	case KENWOOD:
 	case FT2000:
+	case FTDX10:
 	case FT991A:
 	case FLEX:
 			
@@ -1883,6 +1887,10 @@ int Rig_CommandEx(struct RIGPORTINFO * PORT, struct RIGINFO * RIG, TRANSPORTENTR
 		{
 			if (PORT->PortType == FT2000)
 				if (_stricmp(FT2000Modes[ModeNo], Mode) == 0)
+				break;
+
+			if (PORT->PortType == FTDX10)
+				if (_stricmp(FTDX10Modes[ModeNo], Mode) == 0)
 				break;
 
 			if (PORT->PortType == FT991A)
@@ -1925,8 +1933,8 @@ int Rig_CommandEx(struct RIGPORTINFO * PORT, struct RIGINFO * RIG, TRANSPORTENTR
 		if (PORT->PortType == FT2000)
 			FreqPtr->Cmd1Len = sprintf(Poll, "FA%s;MD0%X;FA;MD;", &FreqString[1], ModeNo);
 		else
-		if (PORT->PortType == FT991A)
-			FreqPtr->Cmd1Len = sprintf(Poll, "FA%s;MD0%X;FA;MD;", &FreqString, ModeNo);
+		if (PORT->PortType == FT991A || PORT->PortType == FTDX10)
+			FreqPtr->Cmd1Len = sprintf(Poll, "FA%s;MD0%X;FA;MD;", FreqString, ModeNo);
 		else
 		if (PORT->PortType == FLEX)
 			FreqPtr->Cmd1Len = sprintf(Poll, "ZZFA00%s;ZZMD%02d;ZZFA;ZZMD;", &FreqString[1], ModeNo);
@@ -2201,12 +2209,12 @@ DllExport BOOL APIENTRY Rig_Init()
 
 	NumberofPorts = 0;
 
-	for (port = 0; port < 32; port++)
+	for (port = 0; port < MAXBPQPORTS; port++)
 		PORTInfo[port] = NULL;
 
 	// See if any rigcontrol defined (either RADIO or RIGCONTROL lines)
 
-	for (port = 0; port < 32; port++)
+	for (port = 0; port < MAXBPQPORTS; port++)
 	{
 		if (RadioConfigMsg[port])
 			NeedRig++;
@@ -2362,15 +2370,6 @@ DllExport BOOL APIENTRY Rig_Init()
 		}
 		else
 			PORT->hPTTDevice = PORT->hDevice;	// Use same port for PTT
-
-
-		// Looks like FT847 Needa a "Cat On" Command. If PTC port need to send it here
-
-		if (PORT->PTC && strcmp(PORT->Rigs[0].RigName, "FT847") == 0)
-		{
-			UCHAR CATON[6] = {0,0,0,0,0};
-			SendPTCRadioCommand(PORT->PTC, CATON, 5);
-		}
 	}
 
 	for (p = 0; p < NumberofPorts; p++)
@@ -2381,7 +2380,7 @@ DllExport BOOL APIENTRY Rig_Init()
 		{
 			int j;
 			int k = 0;
-			int BitMask;
+			uint64_t BitMask;
 			struct _EXTPORTDATA * PortEntry;
 
 			RIG = &PORT->Rigs[i];
@@ -2395,7 +2394,7 @@ DllExport BOOL APIENTRY Rig_Init()
 			// then those with neither
 
 			BitMask = RIG->BPQPort;
-			for (j = 0; j < 32; j++)
+			for (j = 0; j < MAXBPQPORTS; j++)
 			{
 				if (BitMask & 1)
 				{
@@ -2408,7 +2407,7 @@ DllExport BOOL APIENTRY Rig_Init()
 			}
 
 			BitMask = RIG->BPQPort;
-			for (j = 0; j < 32; j++)
+			for (j = 0; j < MAXBPQPORTS; j++)
 			{
 				if (BitMask & 1)
 				{
@@ -2421,7 +2420,7 @@ DllExport BOOL APIENTRY Rig_Init()
 			}
 
 			BitMask = RIG->BPQPort;
-			for (j = 0; j < 32; j++)
+			for (j = 0; j < MAXBPQPORTS; j++)
 			{
 				if (BitMask & 1)
 				{
@@ -2703,6 +2702,7 @@ BOOL Rig_Poll()
 
 		case KENWOOD:
 		case FT2000:
+		case FTDX10:
 		case FT991A:
 		case FLEX:
 		case NMEA:
@@ -2772,7 +2772,7 @@ int OpenRigCOMMPort(struct RIGPORTINFO * PORT, VOID * Port, int Speed)
 	if (PORT->remoteSock)		// Using WINMORCONTROL
 		return TRUE;
 
-	if (PORT->PortType == FT2000 || PORT->PortType == FT991A || strcmp(PORT->Rigs[0].RigName, "FT847") == 0)		// FT2000 and similar seem to need two stop bits
+	if (PORT->PortType == FT2000 || PORT->PortType == FT991A || PORT->PortType == FTDX10 || strcmp(PORT->Rigs[0].RigName, "FT847") == 0)		// FT2000 and similar seem to need two stop bits
 		PORT->hDevice = OpenCOMPort((VOID *)Port, Speed, FALSE, FALSE, PORT->Alerted, TWOSTOPBITS);
 	else if (PORT->PortType == NMEA)
 		PORT->hDevice = OpenCOMPort((VOID *)Port, Speed, FALSE, FALSE, PORT->Alerted, ONESTOPBIT);
@@ -2985,6 +2985,7 @@ void CheckRX(struct RIGPORTINFO * PORT)
 
 	case KENWOOD:
 	case FT2000:
+	case FTDX10:
 	case FT991A:
 	case FLEX:
 
@@ -3266,7 +3267,7 @@ CheckOtherPorts:
 	{
 		PortRecord = RIG->PortRecord[i];
 
-		if (PortRecord->PORT_EXT_ADDR(6, PortRecord->PORTCONTROL.PORTNUMBER, 1))
+		if (PortRecord->PORT_EXT_ADDR && PortRecord->PORT_EXT_ADDR(6, PortRecord->PORTCONTROL.PORTNUMBER, 1))
 		{
 			// 1 means can't change - release all
 
@@ -4779,6 +4780,17 @@ Loop:
 			strcpy(RIG->WEB_MODE, FT991AModes[Mode]);
 			strcpy(RIG->ModeString, RIG->WEB_MODE);
 		}
+		else if (PORT->PortType == FTDX10)
+		{
+			Mode = Msg[3] - 48;
+			if (Mode > 16)
+				Mode -= 7;
+			
+			if (Mode > 15) Mode = 15;
+			SetWindowText(RIG->hMODE, FTDX10Modes[Mode]);
+			strcpy(RIG->WEB_MODE, FTDX10Modes[Mode]);
+			strcpy(RIG->ModeString, RIG->WEB_MODE);
+		}
 		else if (PORT->PortType == FLEX)
 		{
 			Mode = atoi(&Msg[3]);
@@ -5902,6 +5914,13 @@ PortFound:
 		PORT->PortType = FT2000;
 	}
 
+	// FTDX10 seems to be different to most other YAESU types
+
+	if (strcmp(RigName, "FTDX10") == 0 && PORT->PortType == YAESU)
+	{
+		PORT->PortType = FTDX10;
+	}
+
 	// FT991A seems to be different to most other YAESU types
 
 	if (strcmp(RigName, "FT991A") == 0 && PORT->PortType == YAESU)
@@ -6193,7 +6212,7 @@ CheckOtherParams:
 			RIG->defaultFreq = atoi(&ptr[12]);
 		}
 		
-		else if (atoi(ptr))
+		else if (atoi(ptr) || ptr[2] == ':')
 			break;					// Not scan freq oe timeband, so see if another param
 
 		ptr = strtok_s(NULL, " \t\n\r", &Context);
@@ -6462,7 +6481,7 @@ CheckOtherParams:
 		strcpy(RIG->PTTOff, "TX0;");
 		RIG->PTTOffLen = 4;
 	}
-	else if	(PORT->PortType == FT991A)
+	else if	(PORT->PortType == FT991A || PORT->PortType == FTDX10)
 	{	
 		RIG->PollLen = 7;
 		strcpy(RIG->Poll, "FA;MD0;");
@@ -6571,7 +6590,7 @@ CheckScan:
 		VARAMode[0] = 0;
 		Dwell = 0.0;
 
-		while (strchr(ptr, ':'))
+		while (ptr && strchr(ptr, ':'))
 		{
 			// New TimeBand
 
@@ -6592,6 +6611,9 @@ CheckScan:
 
 			ptr = strtok_s(NULL, " \t\n\r", &Context);										
 		}
+
+		if (ptr == 0)
+			break;
 
 		if (strchr(ptr, ','))			// New Format
 		{
@@ -6792,6 +6814,24 @@ CheckScan:
 				}
 			}
 			break;
+
+		case FTDX10:
+
+			for (ModeNo = 0; ModeNo < 16; ModeNo++)
+			{
+				if (strlen(Mode) == 1)
+				{
+					if (FTDX10Modes[ModeNo][0] == Mode[0])
+						break;
+				}
+				else
+				{
+					if (_stricmp(FTDX10Modes[ModeNo], Mode) == 0)
+						break;
+				}
+			}
+			break;
+
 
 
 		case FT100:						
@@ -7172,7 +7212,7 @@ CheckScan:
 		{	
 			FreqPtr[0]->Cmd1Len = sprintf(CmdPtr, "FA%s;MD0%X;FA;MD;", &FreqString[1], ModeNo);
 		}
-		else if	(PORT->PortType == FT991A)
+		else if	(PORT->PortType == FT991A || PORT->PortType == FTDX10)
 		{	
 			FreqPtr[0]->Cmd1Len = sprintf(CmdPtr, "FA%s;MD0%X;FA;MD0;", &FreqString, ModeNo);
 		}
@@ -7330,7 +7370,7 @@ VOID SetupScanInterLockGroups(struct RIGINFO *RIG)
 		if (TNC->RXRadio == Interlock)
 		{
 			int p = PortRecord->PORTNUMBER;
-			RIG->BPQPort |=  (1 << p);
+			RIG->BPQPort |= ((uint64_t)1 << p);
 			sprintf(PortString, "%s,%d", PortString, p);
 			TNC->RIG = RIG;
 
@@ -7340,7 +7380,7 @@ VOID SetupScanInterLockGroups(struct RIGINFO *RIG)
 		if (TNC->TXRadio == Interlock && TNC->TXRadio != TNC->RXRadio)
 		{
 			int p = PortRecord->PORTNUMBER;
-			RIG->BPQPort |=  (1 << p);
+			RIG->BPQPort |= ((uint64_t)1 << p);
 			sprintf(TxPortString, "%s,%d", TxPortString, p);
 			TNC->TXRIG = RIG;
 
@@ -9912,7 +9952,7 @@ void ProcessSDRANGELFrame(struct RIGPORTINFO * PORT)
 
 	// As we mess with the message, save a copy and restore for each Rig
 
-	save = strdup(ptr3);
+	save = _strdup(ptr3);
 
 	for (i = 0; i < PORT->ConfiguredRigs; i++)
 	{
