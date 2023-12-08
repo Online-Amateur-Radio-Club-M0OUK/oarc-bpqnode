@@ -1,8 +1,14 @@
+linbpq (6.0.24.22-1) unstable; urgency=medium
+
+  * New Upstream Release 
+
+ -- Dave Hibberd <d@vehibberd.com>  Fri, 08 Dec 2023 12:29:40 +0000
+
 linbpq (6.0.24.16-jammy1) jammy; urgency=medium
 
   * jammy rebuild
 
- -- Dave Hibberd <d@vehibberd.com>  Tue, 31 Oct 2023 22:50:01 +0000
+ -- Dave Hibberd <d@vehibberd.com> Tue, 31 Oct 2023 22:50:01 +0000
 
 linbpq (6.0.24.16-1) unstable; urgency=medium
 
