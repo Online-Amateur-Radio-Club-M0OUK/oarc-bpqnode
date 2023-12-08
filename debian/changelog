@@ -1,3 +1,9 @@
+linbpq (6.0.24.22-jammy1) jammy; urgency=medium
+
+  * Rebuild for jammy.
+
+ -- Dave Hibberd <d@vehibberd.com>  Fri, 08 Dec 2023 12:36:41 +0000
+
 linbpq (6.0.24.22-1) unstable; urgency=medium
 
   * New Upstream Release 
