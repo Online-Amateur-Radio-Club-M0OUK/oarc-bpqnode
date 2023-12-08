@@ -1,3 +1,9 @@
+linbpq (6.0.24.22-1~bpo11+1) bullseye; urgency=medium
+
+  * Rebuild for bullseye.
+
+ -- Dave Hibberd <d@vehibberd.com>  Fri, 08 Dec 2023 12:32:03 +0000
+
 linbpq (6.0.24.22-1) unstable; urgency=medium
 
   * New Upstream Release 
