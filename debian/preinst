@@ -8,5 +8,5 @@ node="/opt/oarc/bpq/bpq32.cfg"
 if [ -L $confile ]; then
 	rm $confile
 	cp $node $confile
-	rm $node
+	mv $node $node.bak
 fi
