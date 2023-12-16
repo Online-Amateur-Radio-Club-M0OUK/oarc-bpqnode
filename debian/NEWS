@@ -1,0 +1,11 @@
+linbpq (6.0.24.22-2) UNRELEASED; urgency=medium
+
+  This is quite a big update, with config moving from /opt/oarc/bpq/bpq32.cfg to
+  /etc/bpq32.cfg. The system shall do this automatically for you, however
+  computers and their programmers are not perfect.
+
+  I strongly recommend at this point backing up your entire
+  /opt/oarc/bpq/ directory (cp -r /opt/oarc/bpq/ ~/bpq-backup/) before
+  proceeding with the upgrade
+
+ -- Dave Hibberd <d@vehibberd.com>  Sat, 16 Dec 2023 13:30:06 +0000
