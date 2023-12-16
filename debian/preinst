@@ -1,0 +1,12 @@
+#!/bin/sh
+
+set -e
+
+confile="/etc/bpq32.cfg"
+node="/opt/oarc/bpq/bpq32.cfg"
+
+if [ -L $confile ]; then
+	rm $confile
+	cp $node $confile
+	rm $node
+fi
