@@ -2,7 +2,7 @@
 After=network.target
 
 [Service]
-ExecStart=/opt/oarc/bpq/linbpq
+ExecStart=/usr/sbin/linbpq -c /etc -d /opt/oarc/bpq -l /opt/oarc/bpq
 WorkingDirectory=/opt/oarc/bpq
 Restart=always
 User=linbpq

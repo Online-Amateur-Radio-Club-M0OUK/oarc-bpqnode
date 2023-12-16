@@ -8,8 +8,8 @@
 +#	setcap "CAP_NET_ADMIN=ep CAP_NET_RAW=ep CAP_NET_BIND_SERVICE=ep" linbpq		
 +
 +install: 
-+	install -b -m 755  -D -d		debian/linbpq/opt/oarc/bpq
-+	install -b -m 755  -s -p linbpq		debian/linbpq/opt/oarc/bpq
++	install -b -m 755  -D -d		debian/linbpq/usr/sbin
++	install -b -m 755  -s -p linbpq		debian/linbpq/usr/sbin
  
  -include *.d
  
