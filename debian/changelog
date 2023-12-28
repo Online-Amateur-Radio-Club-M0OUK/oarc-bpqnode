@@ -1,3 +1,9 @@
+linbpq (6.0.24.25-1) UNRELEASED; urgency=medium
+
+  * New Upstream Release
+
+ -- Dave Hibberd <d@vehibberd.com>  Thu, 28 Dec 2023 10:31:54 +0000
+
 linbpq (6.0.24.22-2) unstable; urgency=medium
 
   * Moved config file home, caused chaos 
