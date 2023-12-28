@@ -69,6 +69,7 @@ int GetAPRSIcon(unsigned char * _REPLYBUFFER, char * NodeURL);
 char * GetStandardPage(char * FN, int * Len);
 BOOL SHA1PasswordHash(char * String, char * Hash);
 char * byte_base64_encode(char *str, int len);
+int APIProcessHTTPMessage(char * response, char * Method, char * URL, char * request,	BOOL LOCAL, BOOL COOKIE);
 
 extern struct ROUTE * NEIGHBOURS;
 extern int  ROUTE_LEN;
@@ -1593,7 +1594,7 @@ int InnerProcessHTTPMessage(struct ConnectionInfo * conn)
 	char * Compressed = 0;
 	char * HostPtr = 0;
 
-	char * Context, * Method, * NodeURL, * Key;
+	char * Context, * Method, * NodeURL = 0, * Key;
 	char _REPLYBUFFER[250000];
 	char Reply[250000];
 
@@ -1631,7 +1632,7 @@ int InnerProcessHTTPMessage(struct ConnectionInfo * conn)
 
 	char Encoding[] = "Content-Encoding: deflate\r\n";
 
-#ifdef WIN32
+#ifdef WIN32xx
 
 	struct _EXCEPTION_POINTERS exinfo;
 	strcpy(EXCEPTMSG, "ProcessHTTPMessage");
@@ -1772,6 +1773,43 @@ int InnerProcessHTTPMessage(struct ConnectionInfo * conn)
 		strlop(Mycall, ' ');
 
 
+		// Look for API messages
+
+		if (_memicmp(Context, "/api/", 5) == 0 || _stricmp(Context, "/api") == 0)
+		{
+			char * Compressed;
+			ReplyLen = APIProcessHTTPMessage(_REPLYBUFFER, Method, Context, MsgPtr, LOCAL, COOKIE);
+				
+			if (memcmp(_REPLYBUFFER, "HTTP", 4) == 0)
+			{
+				// Full Message - just send it
+
+				sendandcheck(sock, _REPLYBUFFER, ReplyLen);
+
+				return 0;
+			}
+
+			if (allowDeflate)
+				Compressed = Compressit(_REPLYBUFFER, ReplyLen, &ReplyLen);
+			else
+				Compressed = _REPLYBUFFER;
+
+			HeaderLen = sprintf(Header, "HTTP/1.1 200 OK\r\n"
+				"Content-Length: %d\r\n"
+				"Content-Type: application/json\r\n"
+				"Connection: close\r\n"
+				"%s\r\n", ReplyLen, Encoding);
+
+			sendandcheck(sock, Header, HeaderLen);
+			sendandcheck(sock, Compressed, ReplyLen);
+
+			if (allowDeflate)
+				free (Compressed);
+
+			return 0;
+		}
+
+
 		// APRS process internally
 
 		if (_memicmp(Context, "/APRS/", 6) == 0 || _stricmp(Context, "/APRS") == 0)
@@ -1874,7 +1912,8 @@ int InnerProcessHTTPMessage(struct ConnectionInfo * conn)
 
 			Session = FindSession(Key);
 
-			if (Session == NULL)
+	
+			if (Session == NULL && _memicmp(Context, "/Mail/API/", 10) != 0)
 			{
 				ReplyLen = sprintf(Reply, MailLostSession, Key);
 				RLen = ReplyLen;
@@ -2025,10 +2064,13 @@ Returnit:
 					return 0;
 				}
 
-				// Add tail
+				if (NodeURL && _memicmp(NodeURL, "/mail/api/", 10) != 0)
+				{
+					// Add tail
 
-				strcpy(&Reply[ReplyLen], Tail);
-				ReplyLen += strlen(Tail);
+					strcpy(&Reply[ReplyLen], Tail);
+					ReplyLen += strlen(Tail);
+				}
 
 				// compress if allowed
 				
@@ -2037,7 +2079,15 @@ Returnit:
 				else
 					Compressed = Reply;
 
-				HeaderLen = sprintf(Header, "HTTP/1.1 200 OK\r\nContent-Length: %d\r\nContent-Type: text/html\r\n%s\r\n", ReplyLen, Encoding);
+				if (NodeURL && _memicmp(NodeURL, "/mail/api/", 10) == 0)
+					HeaderLen = sprintf(Header, "HTTP/1.1 200 OK\r\n"
+						"Content-Length: %d\r\n"
+						"Content-Type: application/json\r\n"
+						"Connection: close\r\n"
+						"%s\r\n", ReplyLen, Encoding);
+				else
+					HeaderLen = sprintf(Header, "HTTP/1.1 200 OK\r\nContent-Length: %d\r\nContent-Type: text/html\r\n%s\r\n", ReplyLen, Encoding);
+				
 				sendandcheck(sock, Header, HeaderLen);
 				sendandcheck(sock, Compressed, ReplyLen);
 
@@ -3889,7 +3939,7 @@ SendResp:
 		}
 		return 0;
 
-#ifdef WIN32
+#ifdef WIN32xx
 	}
 #include "StdExcept.c"
 }
