@@ -439,6 +439,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\nodeapi.c"
+				>
+			</File>
+			<File
 				RelativePath=".\png.c"
 				>
 			</File>
