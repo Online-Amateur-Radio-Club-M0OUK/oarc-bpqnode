@@ -1,3 +1,9 @@
+linbpq (6.0.24.27-1~bpo12+1) bookworm; urgency=medium
+
+  * Rebuild for bookworm.
+
+ -- Dave Hibberd <d@vehibberd.com>  Tue, 16 Jan 2024 20:58:17 +0000
+
 linbpq (6.0.24.27-1) unstable; urgency=medium
 
   * New Upstream Release 
