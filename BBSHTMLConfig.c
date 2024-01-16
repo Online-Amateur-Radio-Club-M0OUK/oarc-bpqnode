@@ -38,6 +38,7 @@ extern char LTATString[2048];
 //static UCHAR BPQDirectory[260];
 
 extern ConnectionInfo Connections[];
+
 extern int NumberofStreams;
 extern time_t MaintClock;						// Time to run housekeeping
 
@@ -49,6 +50,7 @@ extern int MaxChatStreams;
 extern char Position[81];
 extern char PopupText[251];
 extern int PopupMode;
+extern int reportMailEvents;
 
 #define MaxCMS	10				// Numbr of addresses we can keep - currently 4 are used.
 
@@ -114,6 +116,7 @@ int SendWebMailHeader(char * Reply, char * Key, struct HTTPConnectionInfo * Sess
 struct UserInfo * FindBBS(char * Name);
 void ReleaseWebMailStruct(WebMailInfo * WebMail);
 VOID TidyWelcomeMsg(char ** pPrompt);
+int MailAPIProcessHTTPMessage(char * response, char * Method, char * URL, char * request, BOOL LOCAL, char * Param);
 
 char UNC[] = "";
 char CHKD[] = "checked=checked ";
@@ -488,6 +491,13 @@ void ProcessMailHTTPMessage(struct HTTPConnectionInfo * Session, char * Method, 
 		GotFirstMessage = 1;
 		return;
 	}
+
+	if (_memicmp(URL, "/Mail/API/", 10) == 0)
+	{
+		*RLen = MailAPIProcessHTTPMessage(Reply, Method, URL, input, LOCAL, Context);
+		return;
+	}
+
 	
 	if (strcmp(Method, "POST") == 0)
 	{	
@@ -1633,6 +1643,7 @@ VOID ProcessConfUpdate(struct HTTPConnectionInfo * Session, char * MsgPtr, char 
 		UserCantKillT = !UserCantKillT;	// Reverse Logic
 		GetCheckBox(input, "FWDtoMe=", &ForwardToMe);
 		GetCheckBox(input, "OnlyKnown=", &OnlyKnown);
+		GetCheckBox(input, "Events=", &reportMailEvents);
 
 		GetParam(input, "POP3Port=", Temp);
 		POP3InPort = atoi(Temp);
@@ -2610,6 +2621,7 @@ VOID SendConfigPage(char * Reply, int * ReplyLen, char * Key)
 		(UserCantKillT) ? UNC : CHKD,		// Reverse logic
 		(ForwardToMe) ? CHKD  : UNC,
 		(OnlyKnown) ? CHKD  : UNC,
+		(reportMailEvents) ? CHKD  : UNC,
 		POP3InPort, SMTPInPort, NNTPInPort,
 		(RemoteEmail) ? CHKD  : UNC,
 		AMPRDomain,

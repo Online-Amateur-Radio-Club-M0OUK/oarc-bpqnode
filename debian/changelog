@@ -1,8 +1,20 @@
-linbpq (6.0.24.22-2~bpo12+1) bookworm; urgency=medium
+linbpq (6.0.24.27-1) unstable; urgency=medium
+
+  * New Upstream Release 
+
+ -- Dave Hibberd <d@vehibberd.com>  Tue, 16 Jan 2024 20:51:43 +0000
+
+linbpq (6.0.24.25-1) unstable; urgency=medium
+
+  * New Upstream Release
+
+ -- Dave Hibberd <d@vehibberd.com>  Thu, 28 Dec 2023 10:44:47 +0000
+
+linbpq (6.0.24.22-2) unstable; urgency=medium
 
   * Moved config file home, caused chaos 
 
- -- Dave Hibberd <d@vehibberd.com>  Sat, 16 Dec 2023 13:30:06 +0000
+ -- Dave Hibberd <d@vehibberd.com>  Sat, 16 Dec 2023 14:40:20 +0000
 
 linbpq (6.0.24.22-1~bpo12+1) bookworm; urgency=medium
 

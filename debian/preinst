@@ -10,3 +10,5 @@ if [ -L $confile ]; then
 	cp $node $confile
 	mv $node $node.bak
 fi
+
+#DEBHELPER#
