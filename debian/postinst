@@ -22,6 +22,8 @@ if [ "$1" = configure ]; then
     	adduser linbpq dialout
 	chown :linbpq /opt/oarc/bpq
 	chmod 775 /opt/oarc/bpq
+	chown :linbpq /etc/bpq32.cfg
+	chmod 664 /etc/bpq32.cfg
 # If we have setcap is installed, set the requirements
 # which allows us to install our binaries without the setuid
 # bit.     
