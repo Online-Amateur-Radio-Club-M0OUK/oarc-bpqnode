@@ -1,8 +1,8 @@
-linbpq (6.0.24.27-2) UNRELEASED; urgency=medium
+linbpq (6.0.24.27-2) unstable; urgency=medium
 
   * Permissions fix for web-config-editor users  
 
- -- Dave Hibberd <d@vehibberd.com>  Thu, 18 Jan 2024 10:31:04 +0000
+ -- Dave Hibberd <d@vehibberd.com>  Thu, 18 Jan 2024 10:31:56 +0000
 
 linbpq (6.0.24.27-1) unstable; urgency=medium
 
