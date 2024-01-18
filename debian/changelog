@@ -1,3 +1,9 @@
+linbpq (6.0.24.27-2~bpo12+1) bookworm; urgency=medium
+
+  * Rebuild for bookworm.
+
+ -- Dave Hibberd <d@vehibberd.com>  Thu, 18 Jan 2024 10:38:05 +0000
+
 linbpq (6.0.24.27-2) unstable; urgency=medium
 
   * Permissions fix for web-config-editor users  
