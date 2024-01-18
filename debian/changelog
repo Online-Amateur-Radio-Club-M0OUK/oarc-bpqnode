@@ -1,4 +1,4 @@
-linbpq (6.0.24.27-2) unstable; urgency=medium
+linbpq (6.0.24.27-jammy2) jammy; urgency=medium
 
   * Permissions fix for web-config-editor users  
 
