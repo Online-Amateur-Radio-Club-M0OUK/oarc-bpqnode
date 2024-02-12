@@ -3,7 +3,7 @@ Section: hamradio
 Priority: optional
 Maintainer: Debian Hamradio Maintainers <debian-hams@lists.debian.org>
 Uploaders:
- Dave Hibberd <d@vehibberd.com>,
+ Dave Hibberd <hibby@debian.org>,
 Standards-Version: 4.6.2.0
 Vcs-Browser:
 Vcs-Git:
@@ -13,6 +13,6 @@ Rules-Requires-Root: no
 
 Package: linbpq
 Architecture: linux-any
-Depends: ${shlibs:Depends}, ${misc:Depends}
+Depends: ${shlibs:Depends}, ${misc:Depends}, adduser
 Description: Packet node and ax25 stack
  LINBPQ is a Linux version of the BPQ32 Node, BBS and Chat Server components.

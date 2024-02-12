@@ -1,0 +1,8 @@
+# weirdness from oarc packaging
+linbpq: dir-or-file-in-opt [opt/oarc/]
+linbpq: dir-or-file-in-opt [opt/oarc/bpq/]
+# these are ok, just held within the program
+linbpq: embedded-library libminiupnpc [usr/sbin/linbpq]
+linbpq: embedded-library libpng [usr/sbin/linbpq]
+# i know!
+linbpq: no-manual-page [usr/sbin/linbpq]
