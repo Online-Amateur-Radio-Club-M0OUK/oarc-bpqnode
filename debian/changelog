@@ -1,10 +1,10 @@
-linbpq (6.0.24.29-1) UNRELEASED; urgency=medium
+linbpq (6.0.24.29-1) unstable; urgency=medium
 
   * Upstream bump 
   * Added my new details
   * Tidied up some packaging errors
 
- -- Dave Hibberd <hibby@debian.org>  Mon, 12 Feb 2024 23:40:43 +0000
+ -- Dave Hibberd <hibby@debian.org>  Tue, 13 Feb 2024 00:06:33 +0000
 
 linbpq (6.0.24.27-2) unstable; urgency=medium
 
