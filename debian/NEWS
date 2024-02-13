@@ -1,4 +1,4 @@
-linbpq (6.0.24.22-2) UNRELEASED; urgency=medium
+linbpq (6.0.24.22-2) unstable; urgency=medium
 
   This is quite a big update, with config moving from /opt/oarc/bpq/bpq32.cfg to
   /etc/bpq32.cfg. The system shall do this automatically for you, however
