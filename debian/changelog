@@ -1,6 +1,6 @@
-linbpq (6.0.24.30-1) unstable; urgency=medium
+linbpq (6.0.24.30-jammy1) jammy; urgency=medium
 
-  * Upstream bump 
+  * Upstream bump
 
  -- Dave Hibberd <hibby@debian.org>  Fri, 23 Feb 2024 23:24:46 +0000
 
