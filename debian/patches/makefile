@@ -16,6 +16,6 @@
  clean :
 -	rm *.d
 -	rm linbpq $(OBJS)
-+	rm -f *.d
-+	rm -f linbpq $(OBJS)
++	$(RM) *.d
++	$(RM) linbpq $(OBJS)
  
