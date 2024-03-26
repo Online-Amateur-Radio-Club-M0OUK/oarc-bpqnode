@@ -4,6 +4,7 @@ After=network.target
 [Service]
 ExecStart=/usr/sbin/linbpq -c /etc -d /opt/oarc/bpq -l /opt/oarc/bpq
 WorkingDirectory=/opt/oarc/bpq
+ConditionPathExists=/etc/bpq32.cfg
 Restart=always
 User=linbpq
 Group=linbpq

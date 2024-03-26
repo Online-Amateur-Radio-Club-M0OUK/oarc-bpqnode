@@ -1,3 +1,12 @@
+linbpq (6.0.24.33-1) UNRELEASED; urgency=medium
+
+  * Upstream bump 
+  * Moved config file to examples
+  * Updated service to fail on no config
+  * Added helpful README.Debian
+
+ -- Dave Hibberd <hibby@debian.org>  Tue, 26 Mar 2024 00:53:42 +0000
+
 linbpq (6.0.24.30-1) unstable; urgency=medium
 
   * Upstream bump 
