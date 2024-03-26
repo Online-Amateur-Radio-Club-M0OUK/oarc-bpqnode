@@ -1,0 +1,23 @@
+README for linbpq on Debian
+===========================
+
+Please see https://wiki.oarc.uk/packet:linbpq-apt-installation for this guide
+
+# Set config
+Copy the config, edit it & set permissions.
+The permissions are so linbpq web interface can edit the config. 
+
+sudo mv /usr/share/doc/linbpq/examples/bpq32.cfg /etc/bpq32.cfg
+sudo nano /etc/bpq32.cfg
+sudo chown :linbpq /etc/bpq32.cfg
+sudo chmod 644 /etc/bpq32.cfg
+
+# Start linbpq
+
+sudo systemctl start linbpq
+
+# Access your node
+
+It shall be available by accessing http://localhost:8008 in the browser or telnet localhost 8010
+
+-- Dave Hibberd <hibby@debian.org>  Tue, 26 Mar 2024 00:53:42 +0000

@@ -1,5 +1,7 @@
 [Unit]
+Description=Linbpq systemd service file
 After=network.target
+ConditionPathExists=/etc/bpq32.cfg
 
 [Service]
 ExecStart=/usr/sbin/linbpq -c /etc -d /opt/oarc/bpq -l /opt/oarc/bpq
