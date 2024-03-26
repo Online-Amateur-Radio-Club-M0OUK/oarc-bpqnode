@@ -1,4 +1,4 @@
-linbpq (6.0.24.33-1) unstable; urgency=medium
+linbpq (6.0.24.33-jammy1) jammy; urgency=medium
 
   * Upstream bump 
   * Moved config file to examples
