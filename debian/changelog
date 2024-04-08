@@ -1,3 +1,9 @@
+linbpq (6.0.24.34-2) unstable; urgency=medium
+
+  * Fix config permissions bug as reported by Alex 2E1PKY 
+
+ -- Dave Hibberd <hibby@debian.org>  Mon, 08 Apr 2024 22:27:02 +0100
+
 linbpq (6.0.24.34-1) unstable; urgency=medium
 
   * Upstream bump 
