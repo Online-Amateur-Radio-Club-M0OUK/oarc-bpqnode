@@ -4,7 +4,7 @@ Priority: optional
 Maintainer: Debian Hamradio Maintainers <debian-hams@lists.debian.org>
 Uploaders:
  Dave Hibberd <hibby@debian.org>,
-Standards-Version: 4.6.2.0
+Standards-Version: 4.7.0.0
 Vcs-Browser:
 Vcs-Git:
 Homepage: https://www.cantab.net/users/john.wiseman/Documents/
