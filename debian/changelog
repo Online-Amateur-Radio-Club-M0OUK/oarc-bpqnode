@@ -1,6 +1,6 @@
-linbpq (6.0.24.38-jammy1) jammy; urgency=medium
+linbpq (6.0.24.38-noble1) noble; urgency=medium
 
-  * Rebuild for jammy.
+  * Rebuild for noble.
 
  -- Dave Hibberd <hibby@debian.org>  Sun, 09 Jun 2024 23:01:37 +0100
 
