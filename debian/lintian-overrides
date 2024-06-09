@@ -6,3 +6,13 @@ linbpq: embedded-library libminiupnpc [usr/sbin/linbpq]
 linbpq: embedded-library libpng [usr/sbin/linbpq]
 # i know!
 linbpq: no-manual-page [usr/sbin/linbpq]
+# Build fails
+linbpq: hardening-no-bindnow [usr/sbin/linbpq]
+# Directory is populated on first run
+linbpq: package-contains-empty-directory [opt/oarc/bpq/]
+# Code convenience
+linbpq: spelling-error-in-binary Dont Don't [usr/sbin/linbpq]
+linbpq: spelling-error-in-binary Paramters Parameters [usr/sbin/linbpq]
+linbpq: spelling-error-in-binary WiH With [usr/sbin/linbpq]
+linbpq: spelling-error-in-binary lable label [usr/sbin/linbpq]
+linbpq: spelling-error-in-binary lon long [usr/sbin/linbpq]

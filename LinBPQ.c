@@ -75,6 +75,7 @@ int upnpClose();
 void SaveAIS();
 void initAIS();
 void DRATSPoll();
+VOID GetPGConfig();
 
 extern uint64_t timeLoadedMS;
 
@@ -1138,6 +1139,7 @@ int main(int argc, char * argv[])
 	GetBIDDatabase();
 	GetBadWordFile();
 	GetHTMLForms();
+	GetPGConfig();
 
 	// Make sure there is a user record for the BBS, with BBS bit set.
 
@@ -1557,13 +1559,15 @@ int main(int argc, char * argv[])
 		{
 			PollStreams();
 
+			if ((Slowtimer % 20) == 0)
+				FWDTimerProc();
+
 			if (Slowtimer > 100)		// 10 secs
 			{
 				time_t NOW = time(NULL);
 				struct tm * tm;
 
 				TCPTimer();
-				FWDTimerProc();
 				BBSSlowTimer();
 
 				if (MaintClock < NOW)
