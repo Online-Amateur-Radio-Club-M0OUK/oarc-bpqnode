@@ -8,19 +8,19 @@ linbpq (6.0.24.38-1) UNRELEASED; urgency=medium
 
 linbpq (6.0.24.34-2) unstable; urgency=medium
 
-  * Fix config permissions bug as reported by Alex 2E1PKY 
+  * Fix config permissions bug as reported by Alex 2E1PKY
 
  -- Dave Hibberd <hibby@debian.org>  Mon, 08 Apr 2024 22:27:02 +0100
 
 linbpq (6.0.24.34-1) unstable; urgency=medium
 
-  * Upstream bump 
+  * Upstream bump
 
  -- Dave Hibberd <hibby@debian.org>  Sat, 06 Apr 2024 02:15:28 +0100
 
 linbpq (6.0.24.33-1) unstable; urgency=medium
 
-  * Upstream bump 
+  * Upstream bump
   * Moved config file to examples
   * Updated service to fail on no config
   * Added helpful README.Debian
@@ -29,13 +29,13 @@ linbpq (6.0.24.33-1) unstable; urgency=medium
 
 linbpq (6.0.24.30-1) unstable; urgency=medium
 
-  * Upstream bump 
+  * Upstream bump
 
  -- Dave Hibberd <hibby@debian.org>  Fri, 23 Feb 2024 23:24:46 +0000
 
 linbpq (6.0.24.29-1) unstable; urgency=medium
 
-  * Upstream bump 
+  * Upstream bump
   * Added my new details
   * Tidied up some packaging errors
 
@@ -43,13 +43,13 @@ linbpq (6.0.24.29-1) unstable; urgency=medium
 
 linbpq (6.0.24.27-2) unstable; urgency=medium
 
-  * Permissions fix for web-config-editor users  
+  * Permissions fix for web-config-editor users
 
  -- Dave Hibberd <d@vehibberd.com>  Thu, 18 Jan 2024 10:31:56 +0000
 
 linbpq (6.0.24.27-1) unstable; urgency=medium
 
-  * New Upstream Release 
+  * New Upstream Release
 
  -- Dave Hibberd <d@vehibberd.com>  Tue, 16 Jan 2024 20:51:43 +0000
 
@@ -61,19 +61,19 @@ linbpq (6.0.24.25-1) unstable; urgency=medium
 
 linbpq (6.0.24.22-2) unstable; urgency=medium
 
-  * Moved config file home, caused chaos 
+  * Moved config file home, caused chaos
 
  -- Dave Hibberd <d@vehibberd.com>  Sat, 16 Dec 2023 14:40:20 +0000
 
 linbpq (6.0.24.22-1) unstable; urgency=medium
 
-  * New Upstream Release 
+  * New Upstream Release
 
  -- Dave Hibberd <d@vehibberd.com>  Fri, 08 Dec 2023 12:29:40 +0000
 
 linbpq (6.0.24.16-1) unstable; urgency=medium
 
-  * New Upstream release 
+  * New Upstream release
 
  -- Dave Hibberd <d@vehibberd.com>  Tue, 31 Oct 2023 22:50:01 +0000
 
@@ -86,12 +86,12 @@ linbpq (6.0.24.15-2) unstable; urgency=medium
 
 linbpq (6.0.24.15-1) unstable; urgency=medium
 
-  * New upstream release 
+  * New upstream release
 
  -- Dave Hibberd <d@vehibberd.com>  Tue, 10 Oct 2023 22:19:48 +0100
 
 linbpq (6.0.24.2-1) unstable; urgency=medium
 
-  * Initial release. 
+  * Initial release.
 
  -- Dave Hibberd <d@vehibberd.com>  Mon, 28 Aug 2023 23:20:45 +0100
