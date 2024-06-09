@@ -1,10 +1,10 @@
-linbpq (6.0.24.38-1) UNRELEASED; urgency=medium
+linbpq (6.0.24.38-1) unstable; urgency=medium
 
   * New Upstream
   * Tweak config file per recommendation from 2M0MQN to make first start simple
   * Bump standards to 4.7.0.0
 
- -- Dave Hibberd <hibby@debian.org>  Sun, 09 Jun 2024 21:50:05 +0100
+ -- Dave Hibberd <hibby@debian.org>  Sun, 09 Jun 2024 22:38:40 +0100
 
 linbpq (6.0.24.34-2) unstable; urgency=medium
 
