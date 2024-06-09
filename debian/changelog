@@ -1,3 +1,9 @@
+linbpq (6.0.24.38-1~bpo11+1) bullseye; urgency=medium
+
+  * Rebuild for bullseye.
+
+ -- Dave Hibberd <hibby@debian.org>  Sun, 09 Jun 2024 22:50:12 +0100
+
 linbpq (6.0.24.38-1) unstable; urgency=medium
 
   * New Upstream
