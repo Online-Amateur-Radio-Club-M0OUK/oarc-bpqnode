@@ -1,12 +1,10 @@
 Source: linbpq
 Section: hamradio
 Priority: optional
-Maintainer: Debian Hamradio Maintainers <debian-hams@lists.debian.org>
-Uploaders:
- Dave Hibberd <hibby@debian.org>,
-Standards-Version: 4.6.2.0
-Vcs-Browser:
-Vcs-Git:
+Maintainer: Dave Hibberd <hibby@debian.org>
+Standards-Version: 4.7.0.0
+Vcs-Browser: https://github.com/Online-Amateur-Radio-Club-M0OUK/oarc-bpqnode
+Vcs-Git: https://github.com/Online-Amateur-Radio-Club-M0OUK/oarc-bpqnode.git
 Homepage: https://www.cantab.net/users/john.wiseman/Documents/
 Build-Depends: debhelper-compat (= 13), libssl-dev, libminiupnpc-dev, libpcap-dev, libconfig-dev, zlib1g-dev
 Rules-Requires-Root: no
@@ -16,3 +14,6 @@ Architecture: linux-any
 Depends: ${shlibs:Depends}, ${misc:Depends}, adduser
 Description: Packet node and ax25 stack
  LINBPQ is a Linux version of the BPQ32 Node, BBS and Chat Server components.
+ It is actively developed by John G8BPQ and contains a complete, independent
+ implementation of ax.25 and net/rom as well as BBS and Chat applications and
+ can be used either as a packet switch or as a full featured node.
