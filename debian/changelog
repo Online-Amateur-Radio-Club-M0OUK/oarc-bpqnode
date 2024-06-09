@@ -1,3 +1,9 @@
+linbpq (6.0.24.38-jammy1) jammy; urgency=medium
+
+  * Rebuild for jammy.
+
+ -- Dave Hibberd <hibby@debian.org>  Sun, 09 Jun 2024 23:01:37 +0100
+
 linbpq (6.0.24.38-1) unstable; urgency=medium
 
   * New Upstream
