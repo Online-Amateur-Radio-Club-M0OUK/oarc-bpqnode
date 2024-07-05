@@ -1,8 +1,6 @@
-diff --git a/TelnetV6.c b/TelnetV6.c
-index b139fad..4a68108 100644
 --- a/TelnetV6.c
 +++ b/TelnetV6.c
-@@ -428,6 +428,7 @@ int ProcessLine(char * buf, int Port)
+@@ -428,6 +428,7 @@
  		TNC->Hardware = H_TELNET;
  		TCP->IPV4 = TRUE;
  		strcpy(TCP->CMSServer, "cms.winlink.org");
