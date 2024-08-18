@@ -1,4 +1,4 @@
-linbpq (6.0.24.40-2) UNRELEASED; urgency=medium
+linbpq (6.0.24.40-2) bookworm; urgency=medium
 
   * Install config to /etc
 
