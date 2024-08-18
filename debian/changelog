@@ -1,3 +1,9 @@
+linbpq (6.0.24.40-2) UNRELEASED; urgency=medium
+
+  * Install config to /etc
+
+ -- Dave Hibberd <hibby@debian.org>  Sat, 17 Aug 2024 17:41:25 +0100
+
 linbpq (6.0.24.40-1) unstable; urgency=medium
 
   * Fresh upstream release
