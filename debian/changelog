@@ -1,7 +1,12 @@
-linbpq (6.0.24.42-1) UNRELEASED; urgency=medium
+linbpq (6.0.24.42-1~hibbian+1) bookworm-hibbian-unstable; urgency=medium
 
   * Install config to /etc
   * New upstream update 
+  * Patches refreshed
+  * Debian hardening enabled
+    - 2 new patches created that touch almost every file
+    - Considered experimental.
+    - gcc14 builds for Debian Trixie!
 
  -- Dave Hibberd <hibby@debian.org>  Fri, 30 Aug 2024 10:15:11 +0100
 
