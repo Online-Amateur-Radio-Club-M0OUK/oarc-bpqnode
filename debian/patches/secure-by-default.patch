@@ -1,8 +1,8 @@
 --- a/TelnetV6.c
 +++ b/TelnetV6.c
-@@ -428,6 +428,7 @@
- 		TNC->Hardware = H_TELNET;
+@@ -429,6 +429,7 @@
  		TCP->IPV4 = TRUE;
+ 		TCP->SecureTelnet = 1;
  		strcpy(TCP->CMSServer, "cms.winlink.org");
 +		TCP->SecureTelnet = 1;
  	}

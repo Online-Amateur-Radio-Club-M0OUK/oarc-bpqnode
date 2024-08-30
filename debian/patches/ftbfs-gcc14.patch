@@ -1,0 +1,11 @@
+--- a/Multicast.c
++++ b/Multicast.c
+@@ -620,7 +620,7 @@
+ 	int r;
+ 	
+ 	UINT rlen;
+-	UINT outlen;
++	long outlen;
+ 	
+ 	memcpy(&rlen, &Decoded[5], 4);
+ 
