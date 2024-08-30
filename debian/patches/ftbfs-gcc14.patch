@@ -9,3 +9,58 @@
  	
  	memcpy(&rlen, &Decoded[5], 4);
  
+--- a/MBLRoutines.c
++++ b/MBLRoutines.c
+@@ -23,7 +23,7 @@
+ 
+ #include "bpqmail.h"
+ 
+-void SendMessageReadEvent(struct UserInfo * user, struct MsgInfo * Msg);
++void SendMessageReadEvent(char * Call, struct MsgInfo * Msg);
+ 
+ 
+ VOID ProcessMBLLine(CIRCUIT * conn, struct UserInfo * user, UCHAR* Buffer, int len)
+--- a/bpqmail.h
++++ b/bpqmail.h
+@@ -695,8 +695,8 @@
+ 	unsigned char Type;
+ 	unsigned char changed;
+ 	unsigned short seen;
+-	long long last_modif;
+-	long long last_seen;
++	time_t last_modif;
++	time_t last_seen;
+ 	char first_homebbs[41];
+ 	char secnd_homebbs[41];
+ 	char first_zip[9];
+--- a/AGWAPI.c
++++ b/AGWAPI.c
+@@ -128,7 +128,7 @@
+ int AGWGetSessionKey(char * key, struct AGWSocketConnectionInfo * sockptr);
+ int ProcessAGWCommand(struct AGWSocketConnectionInfo * sockptr);
+ int SendDataToAppl(int Stream, byte * Buffer, int Length);
+-int InternalAGWDecodeFrame(char * msg, char * buffer, int Stamp, int * FrameType, int useLocalTime, int doNodes);
++int InternalAGWDecodeFrame(char * msg, char * buffer, time_t Stamp, int * FrameType, int useLocalTime, int doNodes);
+ int AGWDataSocket_Disconnect( struct AGWSocketConnectionInfo * sockptr);
+ int SendRawPacket(struct AGWSocketConnectionInfo * sockptr, char *txmsg, int Length);
+ int ShowApps();
+--- a/AGWMoncode.c
++++ b/AGWMoncode.c
+@@ -68,7 +68,7 @@
+ static UCHAR * DISPLAYARPDATAGRAM(UCHAR * Datagram, UCHAR * Output);
+ 
+ 
+-int InternalAGWDecodeFrame(MESSAGE * msg, char * buffer, int Stamp, int * FrameType, int useLocalTime, int DoNodes)
++int InternalAGWDecodeFrame(MESSAGE * msg, char * buffer, time_t Stamp, int * FrameType, int useLocalTime, int DoNodes)
+ {
+ 	UCHAR * ptr;
+ 	int n;
+@@ -364,7 +364,7 @@
+ 	}
+ 
+ 	if (Output == NULL)
+-		return NULL;
++		return 0;
+ 
+ 	if (Output[-1] != 13)
+ 		Output += sprintf((char *)Output, "\r");

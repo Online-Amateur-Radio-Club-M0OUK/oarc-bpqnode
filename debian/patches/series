@@ -1,3 +1,4 @@
+headers.patch
 ftbfs-gcc14.patch
 spelling-errors.patch
 makefile
