@@ -5,7 +5,7 @@
  	
  	UINT rlen;
 -	UINT outlen;
-+	long outlen;
++	size_t outlen;
  	
  	memcpy(&rlen, &Decoded[5], 4);
  
