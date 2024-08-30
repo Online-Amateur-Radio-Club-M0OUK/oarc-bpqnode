@@ -22,6 +22,7 @@ if [ "$1" = configure ]; then
         exit 1
     } 
     	adduser linbpq dialout
+    	adduser linbpq plugdev
 	chown :linbpq /opt/oarc/bpq
 	chmod 775 /opt/oarc/bpq
 
