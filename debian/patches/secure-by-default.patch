@@ -1,0 +1,10 @@
+--- a/TelnetV6.c
++++ b/TelnetV6.c
+@@ -429,6 +429,7 @@
+ 		TCP->IPV4 = TRUE;
+ 		TCP->SecureTelnet = 1;
+ 		strcpy(TCP->CMSServer, "cms.winlink.org");
++		TCP->SecureTelnet = 1;
+ 	}
+ 
+ 	TNC = TNCInfo[Port];

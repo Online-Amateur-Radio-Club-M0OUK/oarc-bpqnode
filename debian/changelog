@@ -1,3 +1,19 @@
+linbpq (6.0.24.42-1) unstable; urgency=medium
+
+  * Install config to /etc
+  * New upstream update 
+  * Add in new repo for continued updates
+
+ -- Dave Hibberd <hibby@debian.org>  Wed, 25 Sep 2024 01:36:59 +0100
+
+linbpq (6.0.24.40-1) unstable; urgency=medium
+
+  * Fresh upstream release
+    - Patches refreshed
+  * Secure by default patch 
+
+ -- Dave Hibberd <hibby@debian.org>  Sun, 07 Jul 2024 16:09:28 +0100
+
 linbpq (6.0.24.38-1~bpo11+1) bullseye; urgency=medium
 
   * Rebuild for bullseye.

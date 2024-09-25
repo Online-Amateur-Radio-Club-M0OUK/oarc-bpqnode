@@ -1217,6 +1217,12 @@ along with LinBPQ/BPQ32.  If not, see http://www.gnu.org/licenses
 //	Fix potential buffer overflow in Telnet login (36)
 //	Allow longer serial device names (37)
 //	Fix ICF8101 Mode setting (37)
+//	Kill link if we are getting repeated RR(F) after timeout 
+//		(Indicating other station is seeing our RR(P) but not the resent I frame) (40)
+//	Change default of SECURETELNET to 1 (41)
+//	Add optional ATTACH time limit for ARDOP (42)
+//	Fix buffer overflow risk in HTTP Terminal(42)
+
 
 
 #define CKernel
@@ -1310,6 +1316,7 @@ void * KISSHFExtInit(EXTPORTDATA * PortEntry);
 void * WinRPRExtInit(EXTPORTDATA * PortEntry);
 void * HSMODEMExtInit(EXTPORTDATA * PortEntry);
 void * FreeDataExtInit(EXTPORTDATA * PortEntry);
+void * SIXPACKExtInit(EXTPORTDATA * PortEntry);
 
 extern char * ConfigBuffer;	// Config Area
 VOID REMOVENODE(dest_list * DEST);
@@ -3946,6 +3953,9 @@ VOID * InitializeExtDriver(PEXTPORTDATA PORTVEC)
 
 	if (strstr(Value, "FREEDATA"))
 		return FreeDataExtInit;
+
+	if (strstr(Value, "6PACK"))
+		return SIXPACKExtInit;
 
 	ExtDriver = LoadLibrary(Value);
 
