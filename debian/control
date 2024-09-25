@@ -11,7 +11,7 @@ Rules-Requires-Root: no
 
 Package: linbpq
 Architecture: linux-any
-Depends: ${shlibs:Depends}, ${misc:Depends}, adduser
+Depends: ${shlibs:Depends}, ${misc:Depends}, adduser, hibbian-archive-keyring
 Description: Packet node and ax25 stack
  LINBPQ is a Linux version of the BPQ32 Node, BBS and Chat Server components.
  It is actively developed by John G8BPQ and contains a complete, independent

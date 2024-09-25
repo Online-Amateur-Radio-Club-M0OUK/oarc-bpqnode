@@ -1,3 +1,5 @@
+headers.patch
+ftbfs-gcc14.patch
 spelling-errors.patch
 makefile
 secure-by-default.patch

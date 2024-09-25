@@ -1,0 +1,258 @@
+--- /dev/null
++++ b/bpqheaders.h
+@@ -0,0 +1,8 @@
++//Header for an easier build under debian GCC-14
++#include <stdio.h>
++#include <time.h>
++#include <fcntl.h>
++
++int CanPortDigi(int Port);
++
++int KissEncode(unsigned char * inbuff, unsigned char * outbuff, int len);
+--- a/cMain.c
++++ b/cMain.c
+@@ -29,9 +29,10 @@
+ //#include "windows.h"
+ //#include "winerror.h"
+ 
+-#include "time.h"
+-#include "stdio.h"
++#include <time.h>
++#include <stdio.h>
+ #include <fcntl.h>					 
++#include "bpqheaders.h"
+ 
+ #include "kernelresource.h"
+ #include "CHeaders.h"
+--- a/CHeaders.h
++++ b/CHeaders.h
+@@ -93,7 +93,7 @@
+ char * MOVEANDCHECK(TRANSPORTENTRY * Session, char * Bufferptr, char * Source, int Len);
+ VOID DISPLAYCIRCUIT(TRANSPORTENTRY * L4, char * Buffer);
+ char * FormatUptime(int Uptime);
+-char * strlop(char * buf, char delim);
++char * strlop(const char * buf, char delim);
+ BOOL CompareCalls(UCHAR * c1, UCHAR * c2);
+ 
+ VOID PostDataAvailable(TRANSPORTENTRY * Session);
+@@ -427,4 +427,4 @@
+ extern int MinCounter[MaxBPQPortNo + 1];			// Interval Countdown
+ extern BOOL SendFromFile[MaxBPQPortNo + 1];
+ 
+-DllExport uint64_t APIENTRY GetPortFrequency(int PortNo, char * FreqStringMhz);
+\ No newline at end of file
++DllExport uint64_t APIENTRY GetPortFrequency(int PortNo, char * FreqStringMhz);
+--- a/WinRPR.c
++++ b/WinRPR.c
+@@ -63,7 +63,6 @@
+ static RECT Rect;
+ 
+ VOID __cdecl Debugprintf(const char * format, ...);
+-char * strlop(char * buf, char delim);
+ 
+ char NodeCall[11];		// Nodecall, Null Terminated
+ 
+--- a/bpqmail.h
++++ b/bpqmail.h
+@@ -877,7 +877,6 @@
+ };
+ 
+ VOID __cdecl nprintf(CIRCUIT * conn, const char * format, ...);
+-char * strlop(char * buf, char delim);
+ int rt_cmd(CIRCUIT *circuit, char * Buffer);
+ CIRCUIT *circuit_new(CIRCUIT *circuit, int flags);
+ VOID BBSputs(CIRCUIT * conn, char * buf);
+--- a/APRSCode.c
++++ b/APRSCode.c
+@@ -63,7 +63,6 @@
+ VOID __cdecl Consoleprintf(const char * format, ...);
+ BOOL APIENTRY  Send_AX(PMESSAGE Block, DWORD Len, UCHAR Port);
+ VOID Send_AX_Datagram(PDIGIMESSAGE Block, DWORD Len, UCHAR Port);
+-char * strlop(char * buf, char delim);
+ int APRSDecodeFrame(char * msg, char * buffer, time_t Stamp, uint64_t Mask);		// Unsemaphored DecodeFrame
+ APRSHEARDRECORD * UpdateHeard(UCHAR * Call, int Port);
+ BOOL CheckforDups(char * Call, char * Msg, int Len);
+--- a/FLDigi.c
++++ b/FLDigi.c
+@@ -101,8 +101,6 @@
+ VOID ReleaseOtherPorts(struct TNCINFO * ThisTNC);
+ VOID WritetoTrace(struct TNCINFO * TNC, char * Msg, int Len);
+ 
+-char * strlop(char * buf, char delim);
+-
+ extern UCHAR BPQDirectory[];
+ 
+ #define MAXMPSKPORTS 16
+--- a/MULTIPSK.c
++++ b/MULTIPSK.c
+@@ -71,8 +71,6 @@
+ static VOID DoMonitorHddr(struct TNCINFO * TNC, struct AGWHEADER * RXHeader, UCHAR * Msg);
+ VOID SendRPBeacon(struct TNCINFO * TNC);
+ 
+-char * strlop(char * buf, char delim);
+-
+ extern UCHAR BPQDirectory[];
+ 
+ #define MAXMPSKPORTS 16
+--- a/AGWMoncode.c
++++ b/AGWMoncode.c
+@@ -61,7 +61,6 @@
+ 
+ #define	NODES_SIG	0xFF
+ 
+-char * strlop(char * buf, char delim);
+ UCHAR * DisplayINP3RIF(UCHAR * ptr1, UCHAR * ptr2, int msglen);
+ 
+ static UCHAR * DISPLAY_NETROM(MESSAGE * ADJBUFFER, UCHAR * Output, int MsgLen, int DoNodes);
+--- a/Bpq32.c
++++ b/Bpq32.c
+@@ -1406,7 +1406,6 @@
+ VOID FindLostBuffers();
+ BOOL InitializeTNCEmulator();
+ VOID TNCTimer();
+-char * strlop(char * buf, char delim);
+ 
+ DllExport int APIENTRY Get_APPLMASK(int Stream);
+ DllExport int APIENTRY GetStreamPID(int Stream);
+--- a/CMSAuth.c
++++ b/CMSAuth.c
+@@ -31,7 +31,7 @@
+ #include <windows.h>
+ #endif
+ 
+-char * strlop(char * buf, char delim);
++char * strlop(const char * buf, char delim);
+ 
+ VOID APIENTRY md5 (char *arg, unsigned char * checksum);
+ 
+--- a/FLDigi64.c
++++ b/FLDigi64.c
+@@ -102,8 +102,6 @@
+ VOID SuspendOtherPorts(struct TNCINFO * ThisTNC);
+ VOID ReleaseOtherPorts(struct TNCINFO * ThisTNC);
+ 
+-char * strlop(char * buf, char delim);
+-
+ extern UCHAR BPQDirectory[];
+ 
+ #define MAXBPQPORTS 32
+--- a/HTTPcode.c
++++ b/HTTPcode.c
+@@ -102,7 +102,6 @@
+ 
+ extern UCHAR ConfigDirectory[260];
+ 
+-char * strlop(char * buf, char delim);
+ VOID sendandcheck(SOCKET sock, const char * Buffer, int Len);
+ int CompareNode(const void *a, const void *b);
+ int CompareAlias(const void *a, const void *b);
+--- a/MULTIPSK64.c
++++ b/MULTIPSK64.c
+@@ -74,8 +74,6 @@
+ static VOID DoMonitorHddr(struct TNCINFO * TNC, struct AGWHEADER * RXHeader, UCHAR * Msg);
+ VOID SendRPBeacon(struct TNCINFO * TNC);
+ 
+-char * strlop(char * buf, char delim);
+-
+ extern UCHAR BPQDirectory[];
+ 
+ #define MAXBPQPORTS 32
+--- a/Moncode.c
++++ b/Moncode.c
+@@ -59,7 +59,6 @@
+ 
+ #define	NODES_SIG	0xFF
+ 
+-char * strlop(char * buf, char delim);
+ UCHAR * DisplayINP3RIF(UCHAR * ptr1, UCHAR * ptr2, unsigned int msglen);
+ 
+ char * DISPLAY_NETROM(MESSAGE * ADJBUFFER, UCHAR * Output, int MsgLen);
+--- a/NodeMapTest.c
++++ b/NodeMapTest.c
+@@ -201,7 +201,6 @@
+ int ConvFromAX25(unsigned char * incall, char * outcall);
+ void GenerateOutputFiles(time_t Now);
+ void UpdateHeardData(struct NodeData * Node, struct NodeData * Call, char * Freq, char * LOC, char * Flags);
+-char * strlop(char * buf, char delim);
+ void ProcessChatUpdate(char * From, char * Msg);
+ void ProcessNodeUpdate(char * From, char * Msg);
+ 
+--- a/SCSTracker.c
++++ b/SCSTracker.c
+@@ -52,7 +52,6 @@
+ static RECT Rect;
+ 
+ VOID __cdecl Debugprintf(const char * format, ...);
+-char * strlop(char * buf, char delim);
+ 
+ char NodeCall[11];		// Nodecall, Null Terminated
+ 
+--- a/TelnetV6.c
++++ b/TelnetV6.c
+@@ -127,8 +127,6 @@
+ 
+ static int ProcessLine(char * buf, int Port);
+ VOID __cdecl Debugprintf(const char * format, ...);
+-char * strlop(char * buf, char delim);
+-
+ 
+ int DisplaySessions(struct TNCINFO * TNC);
+ int DoStateChange(int Stream);
+--- a/UIARQ.c
++++ b/UIARQ.c
+@@ -78,7 +78,6 @@
+ VOID Send_AX_Datagram(PDIGIMESSAGE Block, DWORD Len, UCHAR Port);
+ int DoScanLine(struct TNCINFO * TNC, char * Buff, int Len);
+ VOID ProcessARQPacket(struct PORTCONTROL * PORT, MESSAGE * Buffer);
+-char * strlop(char * buf, char delim);
+ 
+ extern UCHAR BPQDirectory[];
+ extern char MYALIASLOPPED[10];
+--- a/bpqchat.h
++++ b/bpqchat.h
+@@ -603,7 +603,6 @@
+ VOID nputs(ChatCIRCUIT * conn, char * buf);
+ #endif
+ BOOL matchi(char * p1, char * p2);
+-char * strlop(char * buf, char delim);
+ int rt_cmd(ChatCIRCUIT *circuit, char * Buffer);
+ ChatCIRCUIT *circuit_new(ChatCIRCUIT *circuit, int flags);
+ void makelinks(void);
+@@ -775,4 +774,4 @@
+ 
+ struct ConsoleInfo * ConsHeader[2];
+ 
+-extern BOOL LogCHAT;
+\ No newline at end of file
++extern BOOL LogCHAT;
+--- a/SCSTrackeMulti.c
++++ b/SCSTrackeMulti.c
+@@ -48,7 +48,6 @@
+ static RECT Rect;
+ 
+ VOID __cdecl Debugprintf(const char * format, ...);
+-char * strlop(char * buf, char delim);
+ BOOL KAMStartPort(struct PORTCONTROL * PORT);
+ BOOL KAMStopPort(struct PORTCONTROL * PORT);
+ 
+--- a/SCSTrackeMulti64.c
++++ b/SCSTrackeMulti64.c
+@@ -52,7 +52,6 @@
+ struct TNCINFO * TNCInfo[34];		// Records are Malloc'd
+ 
+ VOID __cdecl Debugprintf(const char * format, ...);
+-char * strlop(char * buf, char delim);
+ BOOL KAMStartPort(struct PORTCONTROL * PORT);
+ BOOL KAMStopPort(struct PORTCONTROL * PORT);
+ 
+--- a/CommonCode.c
++++ b/CommonCode.c
+@@ -568,7 +568,7 @@
+ 	return ptr;
+ }
+ 
+-char * strlop(char * buf, char delim)
++char * strlop(const char * buf, char delim)
+ {
+ 	// Terminate buf at delim, and return rest of string
+ 
