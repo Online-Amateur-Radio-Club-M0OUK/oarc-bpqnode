@@ -1,9 +1,10 @@
-linbpq (6.0.24.42-1) UNRELEASED; urgency=medium
+linbpq (6.0.24.42-1) unstable; urgency=medium
 
   * Install config to /etc
   * New upstream update 
+  * Add in new repo for continued updates
 
- -- Dave Hibberd <hibby@debian.org>  Fri, 30 Aug 2024 10:15:11 +0100
+ -- Dave Hibberd <hibby@debian.org>  Wed, 25 Sep 2024 01:36:59 +0100
 
 linbpq (6.0.24.40-1) unstable; urgency=medium
 
