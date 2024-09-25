@@ -1,3 +1,9 @@
+linbpq (6.0.24.42-1~bpo11+1) bullseye; urgency=medium
+
+  * Rebuild for bullseye.
+
+ -- Dave Hibberd <hibby@debian.org>  Wed, 25 Sep 2024 01:41:01 +0100
+
 linbpq (6.0.24.42-1) unstable; urgency=medium
 
   * Install config to /etc
